@@ -64,6 +64,8 @@
   html.is-touch .controls-card { display: none !important; }
   html.is-touch .controls-card-mobile { display: block !important; }
   html.is-touch .hud-btn { font-size: 14px; }
+  .mobile-version { display:none; position:absolute; top:10px; right:12px; z-index:30; background: rgba(0,0,0,0.45); padding:6px 10px; border-radius:10px; font-weight:800; color:#dbeafe; border:1px solid rgba(99,102,241,0.08); font-size:13px; }
+  html.is-touch .mobile-version { display:block; }
 
   /* Overlay HUD & Start Screen */
   .overlay-screen {
@@ -257,9 +259,9 @@
   }
 
   @media (max-width: 360px) {
-    .mobile-controls { bottom: calc(78px + env(safe-area-inset-bottom, 18px)); gap:8px; }
-    .mobile-controls .m-btn { padding: 8px 10px; font-size: 14px; }
-    .menu-box { padding: 18px; }
+    .mobile-controls { bottom: calc(110px + env(safe-area-inset-bottom, 18px)); gap:6px; }
+    .mobile-controls .m-btn { padding: 6px 8px; font-size: 13px; border-radius: 10px; }
+    .menu-box { padding: 14px; }
   }
 
   /* Desktop: hide mobile-only control text */
@@ -334,6 +336,9 @@
     <button id="mobile-settings-btn" class="m-btn">Settings</button>
   </div>
 
+  <!-- Mobile version badge (visible on touch devices) -->
+  <div id="mobile-version" class="mobile-version">v.3</div>
+
   <!-- Settings overlay (pauses game while open) -->
   <div id="settings-overlay" class="overlay-screen hidden">
     <div class="menu-box">
@@ -393,7 +398,7 @@ function resizeCanvas() {
   // Limit drawing area for very small mobile screens so the whole game fits (account for HUD/controls)
   // If touch device, reserve extra vertical space for mobile controls
   let controlReserve = (typeof isTouchDevice !== 'undefined' && isTouchDevice) ? 110 : 0;
-  if ((typeof isTouchDevice !== 'undefined' && isTouchDevice) && windowWidth <= 360) controlReserve = 160;
+  if ((typeof isTouchDevice !== 'undefined' && isTouchDevice) && windowWidth <= 360) controlReserve = 200;
   const availHeight = Math.max(windowHeight * 0.62, windowHeight - 140 - controlReserve);
   if (newHeight > availHeight) {
     newHeight = availHeight;
@@ -1761,11 +1766,29 @@ canvas.addEventListener("click", () => shootPlayer());
 playBtn.addEventListener("click", startGame);
 // Support immediate touch on some mobile browsers: start on pointerdown for touch
 playBtn.addEventListener('pointerdown', (e) => {
-  if (e.pointerType === 'touch') {
-    e.preventDefault();
-    startGame();
-  }
+  e.preventDefault();
+  startGame();
 });
+// Also handle touchend for older Safari
+playBtn.addEventListener('touchend', (e) => { e.preventDefault(); startGame(); }, { passive: false });
+if (playBtn) playBtn.style.touchAction = 'manipulation';
+
+// Improve responsiveness for mobile control buttons
+if (mobilePauseBtn) {
+  mobilePauseBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); togglePause(); });
+  mobilePauseBtn.addEventListener('touchend', (e) => { e.preventDefault(); togglePause(); }, { passive: false });
+}
+if (mobileRestartBtn) {
+  mobileRestartBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); resetGame(); }, { passive: false });
+  mobileRestartBtn.addEventListener('touchend', (e) => { e.preventDefault(); resetGame(); }, { passive: false });
+}
+if (mobileSettingsBtn) {
+  mobileSettingsBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); if (mobileSettingsBtn) mobileSettingsBtn.click(); });
+}
+
+// Set mobile build version badge text
+const MOBILE_BUILD_VERSION = 'v.3';
+const mobileVersionEl = document.getElementById('mobile-version'); if (mobileVersionEl) mobileVersionEl.textContent = MOBILE_BUILD_VERSION;
 pauseBtn.addEventListener("click", togglePause);
 
 // Win overlay restart handler
