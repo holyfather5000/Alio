@@ -40,6 +40,17 @@
     box-shadow: 0 0 35px rgba(0, 100, 255, 0.25);
     border: 1px solid #1f293d;
   }
+  canvas, .viewport-container, .play-btn, .m-btn, .hud-btn {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: none;
+  }
+  /* When JS marks the document as touch, prefer mobile controls card */
+  html.is-touch .controls-card { display: none !important; }
+  html.is-touch .controls-card-mobile { display: block !important; }
+  html.is-touch .hud-btn { font-size: 14px; }
 
   /* Overlay HUD & Start Screen */
   .overlay-screen {
@@ -226,6 +237,13 @@
     .hud-overlay { top: 8px; pointer-events: none; }
     .hud-overlay .hud-item { padding: 6px 10px; }
   }
+
+  /* Desktop: hide mobile-only control text */
+  .controls-card-mobile { display: none; }
+  @media (max-width: 640px) {
+    .controls-card { display: none; }
+    .controls-card-mobile { display: block; margin-top: 18px; padding: 12px; font-size: 15px; background: rgba(4,9,20,0.6); border-radius:8px; }
+  }
 </style>
 </head>
 <body>
@@ -251,6 +269,11 @@
         <b>Controls:</b><br>
         Move: <b>← →</b> or <b>A / D</b> or <b>Touch Drag</b> &nbsp;|&nbsp; Fire: <b>SPACE / Tap</b><br>
         Pause: <b>P</b> &nbsp;|&nbsp; Restart: <b>R</b>
+      </div>
+      <div class="controls-card-mobile">
+        <b>Touch Controls:</b><br>
+        Move: <b>Touch & Drag</b> &nbsp;|&nbsp; Fire: <b>Tap</b><br>
+        Pause: <b>Use Pause Button</b> &nbsp;|&nbsp; Restart: <b>Use Restart Button</b>
       </div>
       <div id="stats-box" class="controls-card" style="margin-top:14px;">
         <b>Your Stats</b><br>
@@ -296,6 +319,8 @@
         <label style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><input id="setting-touch-fire" type="checkbox" checked> Tap to Fire</label>
       </div>
       <div style="display:flex; gap:10px; justify-content:center;">
+        <button id="settings-pause-btn" class="play-btn">Pause</button>
+        <button id="settings-restart-btn" class="play-btn">Restart</button>
         <button id="settings-close-btn" class="play-btn">Close</button>
       </div>
     </div>
@@ -304,6 +329,21 @@
 
 <script>
 "use strict";
+
+// Detect touch devices early and mark DOM so CSS + JS can adapt immediately
+const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+if (isTouchDevice) document.documentElement.classList.add('is-touch');
+
+// Apply immediate DOM tweaks for touch devices (in case CSS caching delays)
+if (isTouchDevice) {
+  const desktopCards = document.querySelectorAll('.controls-card');
+  desktopCards.forEach(c => c.style.display = 'none');
+  const mobileCards = document.querySelectorAll('.controls-card-mobile');
+  mobileCards.forEach(c => c.style.display = 'block');
+  // simplify pause label
+  if (pauseBtn) pauseBtn.textContent = 'Pause';
+  const mp = document.getElementById('mobile-pause-btn'); if (mp) mp.textContent = 'Pause';
+}
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
@@ -326,9 +366,11 @@ function resizeCanvas() {
   let newWidth = windowWidth;
   let newHeight = windowWidth / targetRatio;
 
-  if (newHeight > windowHeight) {
-    newHeight = windowHeight;
-    newWidth = windowHeight * targetRatio;
+  // Limit drawing area for very small mobile screens so the whole game fits (account for HUD/controls)
+  const availHeight = Math.max(windowHeight * 0.72, windowHeight - 140);
+  if (newHeight > availHeight) {
+    newHeight = availHeight;
+    newWidth = newHeight * targetRatio;
   }
 
   canvas.style.width = `${newWidth}px`;
@@ -1569,14 +1611,16 @@ function drawOverlay() {
     ctx.fillText("GAME PAUSED", W / 2, H / 2 - 20);
     ctx.font = "18px Arial";
     ctx.fillStyle = "#94a3b8";
-    ctx.fillText("Press P or click Resume to continue", W / 2, H / 2 + 25);
+    if (isTouchDevice) ctx.fillText("Tap Resume to continue", W / 2, H / 2 + 25);
+    else ctx.fillText("Press P or click Resume to continue", W / 2, H / 2 + 25);
   } else if (gameOver) {
     ctx.font = "bold 44px Arial";
     ctx.fillStyle = "#ef4444";
     ctx.fillText("GAME OVER", W / 2, H / 2 - 30);
     ctx.font = "18px Arial";
     ctx.fillStyle = "#94a3b8";
-    ctx.fillText("Press R to Play Again", W / 2, H / 2 + 18);
+    if (isTouchDevice) ctx.fillText("Tap Play Again", W / 2, H / 2 + 18);
+    else ctx.fillText("Press R to Play Again", W / 2, H / 2 + 18);
   } else if (showUnlockOverlay) {
     ctx.font = "bold 34px Arial";
     ctx.fillStyle = "#fff3b0";
@@ -1676,9 +1720,11 @@ canvas.addEventListener("mousemove", e => {
 });
 
 canvas.addEventListener("touchstart", e => {
+  // Prevent default to avoid iOS tap highlight/blue overlay
+  e.preventDefault();
   handlePointer(e.touches[0].clientX);
   if (touchFireEnabled) shootPlayer();
-}, { passive: true });
+}, { passive: false });
 
 canvas.addEventListener("touchmove", e => {
   handlePointer(e.touches[0].clientX);
@@ -1741,6 +1787,8 @@ const settingsOverlayEl = document.getElementById('settings-overlay');
 const settingsCloseBtn = document.getElementById('settings-close-btn');
 const settingSound = document.getElementById('setting-sound');
 const settingTouchFire = document.getElementById('setting-touch-fire');
+const settingsPauseBtn = document.getElementById('settings-pause-btn');
+const settingsRestartBtn = document.getElementById('settings-restart-btn');
 
 if (mobilePauseBtn) {
   mobilePauseBtn.addEventListener('click', () => {
@@ -1770,6 +1818,7 @@ if (mobileSettingsBtn) {
     // reflect current settings
     if (settingSound) settingSound.checked = !!soundEnabled;
     if (settingTouchFire) settingTouchFire.checked = !!touchFireEnabled;
+    if (settingsPauseBtn) settingsPauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
   });
 }
 
@@ -1794,6 +1843,20 @@ if (settingSound) {
 if (settingTouchFire) {
   settingTouchFire.addEventListener('change', (e) => {
     touchFireEnabled = !!e.target.checked;
+  });
+}
+
+if (settingsPauseBtn) {
+  settingsPauseBtn.addEventListener('click', () => {
+    togglePause();
+    settingsPauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
+  });
+}
+
+if (settingsRestartBtn) {
+  settingsRestartBtn.addEventListener('click', () => {
+    resetGame();
+    if (settingsOverlayEl) settingsOverlayEl.classList.add('hidden');
   });
 }
 
