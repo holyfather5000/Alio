@@ -1774,16 +1774,21 @@ playBtn.addEventListener('touchend', (e) => { e.preventDefault(); startGame(); }
 if (playBtn) playBtn.style.touchAction = 'manipulation';
 
 // Improve responsiveness for mobile control buttons
-if (mobilePauseBtn) {
-  mobilePauseBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); togglePause(); });
-  mobilePauseBtn.addEventListener('touchend', (e) => { e.preventDefault(); togglePause(); }, { passive: false });
-}
-if (mobileRestartBtn) {
-  mobileRestartBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); resetGame(); }, { passive: false });
-  mobileRestartBtn.addEventListener('touchend', (e) => { e.preventDefault(); resetGame(); }, { passive: false });
-}
-if (mobileSettingsBtn) {
-  mobileSettingsBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); if (mobileSettingsBtn) mobileSettingsBtn.click(); });
+{
+  const mp = document.getElementById('mobile-pause-btn');
+  if (mp) {
+    mp.addEventListener('pointerdown', (e) => { e.preventDefault(); togglePause(); });
+    mp.addEventListener('touchend', (e) => { e.preventDefault(); togglePause(); }, { passive: false });
+  }
+  const mr = document.getElementById('mobile-restart-btn');
+  if (mr) {
+    mr.addEventListener('pointerdown', (e) => { e.preventDefault(); resetGame(); });
+    mr.addEventListener('touchend', (e) => { e.preventDefault(); resetGame(); }, { passive: false });
+  }
+  const ms = document.getElementById('mobile-settings-btn');
+  if (ms) {
+    ms.addEventListener('pointerdown', (e) => { e.preventDefault(); ms.click(); });
+  }
 }
 
 // Set mobile build version badge text
