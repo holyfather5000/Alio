@@ -40,12 +40,21 @@
     box-shadow: 0 0 35px rgba(0, 100, 255, 0.25);
     border: 1px solid #1f293d;
   }
-  canvas, .viewport-container, .play-btn, .m-btn, .hud-btn {
+  /* Only disable touch-action on the canvas; allow buttons to receive click/tap normally */
+  canvas, .viewport-container {
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
     touch-action: none;
+  }
+  /* Buttons: don't block pointer events; use manipulation to allow clicks while preventing double-tap zoom */
+  .play-btn, .m-btn, .hud-btn {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
   }
   /* When JS marks the document as touch, prefer mobile controls card */
   html.is-touch .controls-card { display: none !important; }
@@ -238,6 +247,17 @@
     .hud-overlay .hud-item { padding: 6px 10px; }
   }
 
+  /* mobile controls safe-area and tiny-screen tuning */
+  .mobile-controls {
+    bottom: calc(12px + env(safe-area-inset-bottom, 12px));
+  }
+
+  @media (max-width: 360px) {
+    .mobile-controls { bottom: calc(18px + env(safe-area-inset-bottom, 18px)); gap:8px; }
+    .mobile-controls .m-btn { padding: 8px 10px; font-size: 14px; }
+    .menu-box { padding: 18px; }
+  }
+
   /* Desktop: hide mobile-only control text */
   .controls-card-mobile { display: none; }
   @media (max-width: 640px) {
@@ -367,7 +387,9 @@ function resizeCanvas() {
   let newHeight = windowWidth / targetRatio;
 
   // Limit drawing area for very small mobile screens so the whole game fits (account for HUD/controls)
-  const availHeight = Math.max(windowHeight * 0.72, windowHeight - 140);
+  // If touch device, reserve extra vertical space for mobile controls
+  const controlReserve = (typeof isTouchDevice !== 'undefined' && isTouchDevice) ? 110 : 0;
+  const availHeight = Math.max(windowHeight * 0.66, windowHeight - 140 - controlReserve);
   if (newHeight > availHeight) {
     newHeight = availHeight;
     newWidth = newHeight * targetRatio;
