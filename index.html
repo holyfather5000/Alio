@@ -41,12 +41,16 @@
     border: 1px solid #1f293d;
   }
   /* Only disable touch-action on the canvas; allow buttons to receive click/tap normally */
-  canvas, .viewport-container {
+  canvas { 
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
     touch-action: none;
+  }
+  .viewport-container {
+    /* allow normal pointer behavior for overlays/buttons inside */
+    touch-action: auto;
   }
   /* Buttons: don't block pointer events; use manipulation to allow clicks while preventing double-tap zoom */
   .play-btn, .m-btn, .hud-btn {
@@ -253,7 +257,7 @@
   }
 
   @media (max-width: 360px) {
-    .mobile-controls { bottom: calc(18px + env(safe-area-inset-bottom, 18px)); gap:8px; }
+    .mobile-controls { bottom: calc(78px + env(safe-area-inset-bottom, 18px)); gap:8px; }
     .mobile-controls .m-btn { padding: 8px 10px; font-size: 14px; }
     .menu-box { padding: 18px; }
   }
@@ -388,8 +392,9 @@ function resizeCanvas() {
 
   // Limit drawing area for very small mobile screens so the whole game fits (account for HUD/controls)
   // If touch device, reserve extra vertical space for mobile controls
-  const controlReserve = (typeof isTouchDevice !== 'undefined' && isTouchDevice) ? 110 : 0;
-  const availHeight = Math.max(windowHeight * 0.66, windowHeight - 140 - controlReserve);
+  let controlReserve = (typeof isTouchDevice !== 'undefined' && isTouchDevice) ? 110 : 0;
+  if ((typeof isTouchDevice !== 'undefined' && isTouchDevice) && windowWidth <= 360) controlReserve = 160;
+  const availHeight = Math.max(windowHeight * 0.62, windowHeight - 140 - controlReserve);
   if (newHeight > availHeight) {
     newHeight = availHeight;
     newWidth = newHeight * targetRatio;
@@ -1754,6 +1759,13 @@ canvas.addEventListener("touchmove", e => {
 
 canvas.addEventListener("click", () => shootPlayer());
 playBtn.addEventListener("click", startGame);
+// Support immediate touch on some mobile browsers: start on pointerdown for touch
+playBtn.addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'touch') {
+    e.preventDefault();
+    startGame();
+  }
+});
 pauseBtn.addEventListener("click", togglePause);
 
 // Win overlay restart handler
