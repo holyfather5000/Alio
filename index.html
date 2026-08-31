@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Alio</title>
+<link rel="icon" type="image/png" href="alio-fav.png">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body {
@@ -64,7 +65,6 @@
   html.is-touch .controls-card { display: none !important; }
   html.is-touch .controls-card-mobile { display: block !important; }
   html.is-touch .hud-btn { font-size: 14px; }
-  .mobile-version { display:block; position:absolute; top:10px; right:12px; z-index:30; background: rgba(0,0,0,0.45); padding:6px 10px; border-radius:10px; font-weight:800; color:#dbeafe; border:1px solid rgba(99,102,241,0.08); font-size:13px; }
 
   /* Overlay HUD & Start Screen */
   .overlay-screen {
@@ -336,7 +336,7 @@
   </div>
 
   <!-- Mobile version badge (visible on touch devices) -->
-  <div id="mobile-version" class="mobile-version">v.3</div>
+  
 
   <!-- Settings overlay (pauses game while open) -->
   <div id="settings-overlay" class="overlay-screen hidden">
@@ -1810,9 +1810,7 @@ if (playBtn) {
   }
 }
 
-// Set mobile build version badge text
-const MOBILE_BUILD_VERSION = 'v.3';
-const mobileVersionEl = document.getElementById('mobile-version'); if (mobileVersionEl) mobileVersionEl.textContent = MOBILE_BUILD_VERSION;
+// mobile build badge removed
 pauseBtn.addEventListener("click", togglePause);
 
 // Win overlay restart handler
