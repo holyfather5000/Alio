@@ -262,6 +262,8 @@
   @media (max-width: 360px) {
     .mobile-controls { bottom: calc(140px + env(safe-area-inset-bottom, 18px)); gap:6px; }
     .mobile-controls .m-btn { padding: 6px 8px; font-size: 13px; border-radius: 10px; }
+    /* Slightly smaller circular fire button on very small screens */
+    #mobile-controller .fire-btn { width: 52px; min-height: 52px; }
     .menu-box { padding: 14px; }
   }
 
@@ -273,10 +275,31 @@
   /* Mobile in-canvas controller (slider + fire) */
   #mobile-controller { display:none; position: relative; width: 100%; max-width: 720px; margin-top: 6px; z-index: 8; }
   #mobile-controller .ctrl-row { display:flex; gap:10px; align-items:center; justify-content:space-between; }
-  #mobile-controller input[type=range] { -webkit-appearance:none; width: calc(100% - 100px); height: 30px; border-radius:10px; background: linear-gradient(90deg,#1f2e42,#0f172a); }
+  #mobile-controller input[type=range] { -webkit-appearance:none; width: calc(100% - 100px); height: 60px; border-radius:10px; background: linear-gradient(90deg,#1f2e42,#0f172a); }
   #mobile-controller input[type=range] { appearance:none; }
-  #mobile-controller .fire-btn { width:60px; height:60px; border-radius:50%; background:linear-gradient(180deg,#b92f2f,#d10000); border:3px solid rgba(199, 199, 199, 0.318); box-shadow:0 6px 18px rgba(209,16,16,0.35); color:#fff; font-weight:900; font-size:0px; display:flex; align-items:center; justify-content:center; }
-  #mobile-controller .fire-btn { width:60px; height:60px; border-radius:50%; background:linear-gradient(180deg, #b92f2f 0%,#d10000 100%); border:2px solid rgba(255, 40, 40, 0.352); box-shadow:0 6px 18px rgba(255,40,40,0.25); color:#fff; font-weight:900; font-size:0px; display:flex; align-items:center; justify-content:center; opacity:0.9; }
+  /* Mobile fire button: keep perfect circular shape regardless of flex sizing */
+  #mobile-controller .fire-btn {
+    width: 60px;
+    aspect-ratio: 1 / 1;
+    height: auto;
+    min-height: 60px;
+    border-radius: 50%;
+    padding: 0;
+    box-sizing: border-box;
+    background: linear-gradient(180deg, #b92f2f 0%, #d10000 100%);
+    border: 2px solid rgba(255, 40, 40, 0.35);
+    box-shadow: 0 6px 18px rgba(255,40,40,0.25);
+    color: #fff;
+    font-weight: 900;
+    font-size: 0px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    line-height: 1;
+    overflow: hidden;
+    opacity: 0.95;
+  }
   @media (max-width:640px) { #mobile-controller { display:block; } }
 
   /* slider hint overlay */
