@@ -375,20 +375,21 @@
 
   
   <!-- Settings overlay (pauses game while open) -->
-  <div id="settings-overlay" class="overlay-screen hidden">
+  <div id="settings-overlay" style="padding: 10px 0;" class="overlay-screen hidden">
     <div class="menu-box">
       <h2 style="margin-bottom:8px;">Settings</h2>
       <div style="color:#cbd5e1; font-size:14px; text-align:left; margin-bottom:12px;">
         </div>
         <br />
+        
        <div style="display:flex; flex-direction:row; justify-content:space-between; align-items:center; gap:0px; margin:8px 0;">
-  <label style="font-weight:600; color:#cbd5e1; white-space:nowrap;">Sound</label>
-  <input id="setting-sound-range" type="range" min="0" max="100" value="100" style="width:90%;" />
+        <label style="font-weight:600; color:#cbd5e1; white-space:nowrap;">Sound</label>
+        <input id="setting-sound-range" type="range" min="0" max="100" value="100" style="width:80%;" />
 </div>
 <br />
       <div class="settings-actions" style="display:flex; gap:10px; justify-content:center;">
-        <button id="settings-restart-btn" class="play-btn" style="padding-bottom: 20px;text-transform: none; font-size: 1rem">Restart</button><br />
-        <button id="settings-close-btn" class="play-btn" style="padding-bottom: 20px;text-transform: none; font-size: 1rem;">Back to Game</button>
+        <button id="settings-restart-btn" class="play-btn" style="padding-bottom: 10px;text-transform: none; font-size: 1rem">Restart</button><br />
+        <button id="settings-close-btn" class="play-btn" style="padding-bottom: 10px;text-transform: none; font-size: 1rem;">Back to Game</button>
       </div>
     </div>
   </div>
