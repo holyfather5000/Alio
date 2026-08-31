@@ -212,7 +212,7 @@
   /* Mobile on-screen controls (shown at small widths) */
   .mobile-controls {
     position: absolute;
-    bottom: 18px;
+    bottom: 38px;
     left: 50%;
     transform: translateX(-50%);
     display: none;
@@ -254,11 +254,11 @@
 
   /* mobile controls safe-area and tiny-screen tuning */
   .mobile-controls {
-    bottom: calc(12px + env(safe-area-inset-bottom, 12px));
+    bottom: calc(90px + env(safe-area-inset-bottom, 12px));
   }
 
   @media (max-width: 360px) {
-    .mobile-controls { bottom: calc(140px + env(safe-area-inset-bottom, 18px)); gap:6px; }
+    .mobile-controls { bottom: calc(180px + env(safe-area-inset-bottom, 18px)); gap:6px; }
     .mobile-controls .m-btn { padding: 6px 8px; font-size: 13px; border-radius: 10px; }
     .menu-box { padding: 14px; }
   }
@@ -339,6 +339,56 @@
   <div id="mobile-version" class="mobile-version">v.3</div>
   <!-- Script status for debugging (visible) -->
   <div id="script-status" style="position:fixed; left:10px; bottom:8px; z-index:60; background:rgba(0,0,0,0.45); color:#fff; padding:6px 8px; border-radius:8px; font-size:12px; font-weight:700;">script: not-init</div>
+  <!-- Large debug panel (shows errors, events, device info) -->
+  <div id="debug-panel" style="position:fixed; left:8px; right:8px; top:8px; z-index:9999; background:rgba(0,0,0,0.85); color:#fff; padding:10px; border-radius:10px; font-size:12px; max-height:34vh; overflow:auto; box-shadow:0 6px 18px rgba(0,0,0,0.6);">
+    <div style="font-weight:800; margin-bottom:6px;">Alien Smasher — Debug Panel (v.3)</div>
+    <div id="dbg-info">loading...</div>
+    <div id="dbg-log" style="margin-top:8px; white-space:pre-wrap; font-family:monospace; font-size:12px;"></div>
+    <div style="text-align:right; margin-top:8px;"><button id="dbg-close" style="padding:6px 10px; border-radius:8px; background:#222; color:#fff; border:1px solid #444;">Close</button></div>
+  </div>
+  <script>
+    (function(){
+      function $id(id){return document.getElementById(id)}
+      var info = [];
+      function log(msg){
+        try{
+          var lg = $id('dbg-log'); if (lg) { lg.textContent = msg + '\n' + lg.textContent; }
+          var ss = $id('script-status'); if (ss) ss.textContent = 'script: ' + msg.split('\n')[0];
+          console.log('dbg:', msg);
+        }catch(e){ /* ignore */ }
+      }
+      // Populate initial info
+      try{
+        info.push('url: ' + location.href);
+        info.push('ua: ' + navigator.userAgent);
+        info.push('touch: ' + (('ontouchstart' in window)|| (navigator.maxTouchPoints>0)));
+        info.push('inner: ' + window.innerWidth + 'x' + window.innerHeight + ' dpr=' + (window.devicePixelRatio||1));
+        info.push('platform: ' + navigator.platform);
+        $id('dbg-info').textContent = info.join(' | ');
+        log('init');
+      }catch(e){ console.error(e); }
+
+      // Global error handlers
+      window.addEventListener('error', function(ev){
+        log('ERROR: ' + (ev && ev.message ? ev.message : ev.toString()) + ' @ ' + (ev && ev.filename? ev.filename : '') + ':' + (ev && ev.lineno? ev.lineno:'') );
+      });
+      window.addEventListener('unhandledrejection', function(ev){ log('UNHANDLED REJECTION: ' + (ev && ev.reason? ev.reason : JSON.stringify(ev))); });
+      window.onerror = function(msg, src, line){ log('onerror: ' + msg + ' @ ' + src + ':' + line); };
+
+      // Log pointer / touch events to see if they fire
+      document.addEventListener('pointerdown', function(e){ log('pointerdown on ' + (e.target && e.target.id? e.target.id : e.target.tagName)); }, {passive:false});
+      document.addEventListener('touchstart', function(e){ log('touchstart on ' + (e.target && e.target.id? e.target.id : e.target.tagName)); }, {passive:false});
+
+      // Close button
+      $id('dbg-close').addEventListener('click', function(){ var p = $id('debug-panel'); if(p) p.style.display='none'; });
+
+      // Helper to force-visible mobile-version
+      try{ var mv = $id('mobile-version'); if (mv) mv.style.display='block'; }catch(e){}
+
+      // ensure script-status shows ready
+      try{ var ss = $id('script-status'); if (ss) ss.textContent = 'script: dbg-ready'; }catch(e){}
+    })();
+  </script>
 
   <!-- Settings overlay (pauses game while open) -->
   <div id="settings-overlay" class="overlay-screen hidden">
