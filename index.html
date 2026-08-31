@@ -248,7 +248,9 @@
     /* show mobile controls on small screens */
     .mobile-controls { display: flex; }
     /* make HUD less intrusive for touch */
-    .hud-overlay { top: 8px; pointer-events: none; }
+    /* Move HUD into document flow on mobile so it's not under URL bar */
+    .hud-overlay { position: relative; top: auto; left: auto; transform: none; width: 98%; max-width: none; margin-bottom: 8px; pointer-events: none; }
+    .hud-overlay #pause-btn { display: none; }
     .hud-overlay .hud-item { padding: 6px 10px; }
   }
 
@@ -262,6 +264,13 @@
     .mobile-controls .m-btn { padding: 6px 8px; font-size: 13px; border-radius: 10px; }
     .menu-box { padding: 14px; }
   }
+
+  /* Mobile in-canvas controller (slider + fire) */
+  #mobile-controller { display:none; position: relative; width: 100%; max-width: 720px; margin-top: 6px; z-index: 8; }
+  #mobile-controller .ctrl-row { display:flex; gap:10px; align-items:center; justify-content:space-between; }
+  #mobile-controller input[type=range] { -webkit-appearance:none; width: calc(100% - 86px); height: 10px; border-radius:10px; background: linear-gradient(90deg,#334155,#0f172a); }
+  #mobile-controller .fire-btn { width:70px; height:70px; border-radius:50%; background:linear-gradient(180deg,#ff4d4d,#d10000); border:3px solid rgba(255,80,80,0.15); box-shadow:0 6px 18px rgba(209,16,16,0.35); color:#fff; font-weight:900; font-size:16px; display:flex; align-items:center; justify-content:center; }
+  @media (max-width:640px) { #mobile-controller { display:block; } }
 
   /* Desktop: hide mobile-only control text */
   .controls-card-mobile { display: none; }
@@ -283,6 +292,14 @@
   </div>
 
   <canvas id="game" width="720" height="960"></canvas>
+
+  <!-- Mobile in-flow controller: slider + fire button -->
+  <div id="mobile-controller">
+    <div class="ctrl-row">
+      <input id="mobile-slider" type="range" min="0" max="100" value="50" />
+      <button id="mobile-fire" class="fire-btn">FIRE</button>
+    </div>
+  </div>
 
   <div id="start-overlay" class="overlay-screen">
     <div class="menu-box">
@@ -330,7 +347,6 @@
 
   <!-- Mobile on-screen control bar -->
   <div id="mobile-controls" class="mobile-controls" aria-hidden="true">
-    <button id="mobile-pause-btn" class="m-btn">Pause</button>
     <button id="mobile-restart-btn" class="m-btn">Restart</button>
     <button id="mobile-settings-btn" class="m-btn">Settings</button>
   </div>
@@ -412,8 +428,8 @@ function resizeCanvas() {
 
   // Limit drawing area for very small mobile screens so the whole game fits (account for HUD/controls)
   // If touch device, reserve extra vertical space for mobile controls
-  let controlReserve = (typeof isTouchDevice !== 'undefined' && isTouchDevice) ? 110 : 0;
-  if ((typeof isTouchDevice !== 'undefined' && isTouchDevice) && windowWidth <= 360) controlReserve = 200;
+  let controlReserve = (typeof isTouchDevice !== 'undefined' && isTouchDevice) ? 80 : 0;
+  if ((typeof isTouchDevice !== 'undefined' && isTouchDevice) && windowWidth <= 360) controlReserve = 120;
   const availHeight = Math.max(windowHeight * 0.62, windowHeight - 140 - controlReserve);
   if (newHeight > availHeight) {
     newHeight = availHeight;
@@ -1859,21 +1875,16 @@ if (finalStartBtn) {
 }
 
 // Mobile control wiring
-const mobilePauseBtn = document.getElementById('mobile-pause-btn');
 const mobileRestartBtn = document.getElementById('mobile-restart-btn');
 const mobileSettingsBtn = document.getElementById('mobile-settings-btn');
+const mobileSlider = document.getElementById('mobile-slider');
+const mobileFireBtn = document.getElementById('mobile-fire');
 const settingsOverlayEl = document.getElementById('settings-overlay');
 const settingsCloseBtn = document.getElementById('settings-close-btn');
 const settingSound = document.getElementById('setting-sound');
 const settingTouchFire = document.getElementById('setting-touch-fire');
 const settingsPauseBtn = document.getElementById('settings-pause-btn');
 const settingsRestartBtn = document.getElementById('settings-restart-btn');
-
-if (mobilePauseBtn) {
-  mobilePauseBtn.addEventListener('click', () => {
-    togglePause();
-  });
-}
 
 if (mobileRestartBtn) {
   mobileRestartBtn.addEventListener('click', () => {
@@ -1900,6 +1911,29 @@ if (mobileSettingsBtn) {
     if (settingsPauseBtn) settingsPauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
   });
 }
+
+// Wire new mobile slider and fire controls
+if (mobileSlider) {
+  // initialize slider position to center
+  mobileSlider.value = 50;
+  mobileSlider.addEventListener('input', function(e){
+    try{
+      const rect = canvas.getBoundingClientRect();
+      const pct = Number(e.target.value) / 100;
+      const clientX = rect.left + pct * rect.width;
+      handlePointer(clientX);
+    }catch(err){}
+  });
+  // also support pointer events for dragging
+  mobileSlider.addEventListener('pointerdown', function(e){ e.preventDefault(); });
+}
+if (mobileFireBtn) {
+  mobileFireBtn.addEventListener('pointerdown', function(e){ e.preventDefault(); shootPlayer(); });
+  mobileFireBtn.addEventListener('touchstart', function(e){ e.preventDefault(); shootPlayer(); }, { passive:false });
+}
+
+// Only show mobile-controller when running on touch devices
+try{ if (!isTouchDevice) { const mc = document.getElementById('mobile-controller'); if (mc) mc.style.display = 'none'; } } catch(e) {}
 
 if (settingsCloseBtn) {
   settingsCloseBtn.addEventListener('click', () => {
