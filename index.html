@@ -273,10 +273,15 @@
   /* Mobile in-canvas controller (slider + fire) */
   #mobile-controller { display:none; position: relative; width: 100%; max-width: 720px; margin-top: 6px; z-index: 8; }
   #mobile-controller .ctrl-row { display:flex; gap:10px; align-items:center; justify-content:space-between; }
-  #mobile-controller input[type=range] { -webkit-appearance:none; width: calc(100% - 86px); height: 10px; border-radius:10px; background: linear-gradient(90deg,#334155,#0f172a); }
+  #mobile-controller input[type=range] { -webkit-appearance:none; width: calc(100% - 80px); height: 10px; border-radius:10px; background: linear-gradient(90deg,#334155,#0f172a); }
+  #mobile-controller input[type=range] { appearance:none; }
   #mobile-controller .fire-btn { width:70px; height:70px; border-radius:50%; background:linear-gradient(180deg,#ff4d4d,#d10000); border:3px solid rgba(255,80,80,0.15); box-shadow:0 6px 18px rgba(209,16,16,0.35); color:#fff; font-weight:900; font-size:16px; display:flex; align-items:center; justify-content:center; }
-  #mobile-controller .fire-btn { width:70px; height:70px; border-radius:50%; background:linear-gradient(180deg,#ff9b9b 0%, #ff6b6b 100%); border:2px solid rgba(255,80,80,0.08); box-shadow:0 6px 18px rgba(209,16,16,0.18); color:#fff; font-weight:900; font-size:16px; display:flex; align-items:center; justify-content:center; }
+  #mobile-controller .fire-btn { width:70px; height:70px; border-radius:50%; background:linear-gradient(180deg,#ff2b2b 0%, #ff0000 100%); border:2px solid rgba(255,40,40,0.12); box-shadow:0 6px 18px rgba(255,40,40,0.25); color:#fff; font-weight:900; font-size:16px; display:flex; align-items:center; justify-content:center; opacity:0.9; }
   @media (max-width:640px) { #mobile-controller { display:block; } }
+
+  /* slider hint overlay */
+  #mobile-controller { position:relative; }
+  #mobile-slider-hint { position:absolute; left:12px; right:86px; top:50%; transform:translateY(-50%); pointer-events:none; color:#ffffff; opacity:0.75; font-size:20px; display:flex; justify-content:center; align-items:center; }
 
   /* Settings overlay mobile adjustments */
   @media (max-width: 640px) {
@@ -315,7 +320,10 @@
   <!-- Mobile in-flow controller: slider + fire button -->
   <div id="mobile-controller">
     <div class="ctrl-row">
-      <input id="mobile-slider" type="range" min="0" max="100" value="50" />
+      <div style="position:relative; width:100%;">
+        <input id="mobile-slider" type="range" min="0" max="100" value="50" style="width:100%;" />
+        <div id="mobile-slider-hint">⟵ ⟶</div>
+      </div>
       <button id="mobile-fire" class="fire-btn" aria-label="Fire" title="Fire"></button>
     </div>
   </div>
@@ -377,13 +385,14 @@
     <div class="menu-box">
       <h2 style="margin-bottom:8px;">Settings</h2>
       <div style="color:#cbd5e1; font-size:14px; text-align:left; margin-bottom:12px;">
-        <label style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><input id="setting-sound" type="checkbox" checked> Enable Sound</label>
-        <label style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><input id="setting-touch-fire" type="checkbox" checked> Tap to Fire</label>
-      </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px; align-items:stretch; margin-top:8px;">
+          <label style="font-weight:600; color:#cbd5e1;">Sound</label>
+          <input id="setting-sound-range" type="range" min="0" max="100" value="100" style="width:100%;" />
+        </div>
       <div class="settings-actions" style="display:flex; gap:10px; justify-content:center;">
-        <button id="settings-pause-btn" class="play-btn">Pause</button>
         <button id="settings-restart-btn" class="play-btn">Restart</button>
-        <button id="settings-close-btn" class="play-btn">Close</button>
+        <button id="settings-close-btn" class="play-btn">Resume</button>
       </div>
     </div>
   </div>
@@ -442,8 +451,9 @@ function resizeCanvas() {
   const targetRatio = W / H;
   // prefer 96% of viewport width on small touch devices
   let newWidth = windowWidth;
-  if (typeof isTouchDevice !== 'undefined' && isTouchDevice && windowWidth <= 640) {
-    newWidth = Math.floor(windowWidth * 0.96);
+    if (typeof isTouchDevice !== 'undefined' && isTouchDevice && windowWidth <= 640) {
+    // use a slightly larger width on mobile for better visibility
+    newWidth = Math.floor(windowWidth * 0.98);
   }
   let newHeight = newWidth / targetRatio;
 
@@ -481,8 +491,8 @@ function playSound(type) {
     osc.type = 'sawtooth';
     osc.frequency.setValueAtTime(880, now);
     osc.frequency.exponentialRampToValueAtTime(110, now + 0.12);
-    gain.gain.setValueAtTime(0.15, now);
-    gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
+    gain.gain.setValueAtTime(0.15 * masterVolume, now);
+    gain.gain.linearRampToValueAtTime(0.01 * masterVolume, now + 0.12);
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     osc.start(now);
@@ -493,8 +503,8 @@ function playSound(type) {
     osc.type = 'square';
     osc.frequency.setValueAtTime(1200, now);
     osc.frequency.exponentialRampToValueAtTime(80, now + 0.18);
-    gain.gain.setValueAtTime(0.2, now);
-    gain.gain.linearRampToValueAtTime(0.01, now + 0.18);
+    gain.gain.setValueAtTime(0.2 * masterVolume, now);
+    gain.gain.linearRampToValueAtTime(0.01 * masterVolume, now + 0.18);
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     osc.start(now);
@@ -505,8 +515,8 @@ function playSound(type) {
     osc.type = 'triangle';
     osc.frequency.setValueAtTime(300, now);
     osc.frequency.linearRampToValueAtTime(120, now + 0.15);
-    gain.gain.setValueAtTime(0.12, now);
-    gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+    gain.gain.setValueAtTime(0.12 * masterVolume, now);
+    gain.gain.linearRampToValueAtTime(0.01 * masterVolume, now + 0.15);
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     osc.start(now);
@@ -517,8 +527,8 @@ function playSound(type) {
     osc.type = 'square';
     osc.frequency.setValueAtTime(220, now);
     osc.frequency.linearRampToValueAtTime(60, now + 0.08);
-    gain.gain.setValueAtTime(0.15, now);
-    gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+    gain.gain.setValueAtTime(0.15 * masterVolume, now);
+    gain.gain.linearRampToValueAtTime(0.01 * masterVolume, now + 0.08);
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     osc.start(now);
@@ -529,8 +539,8 @@ function playSound(type) {
     osc.type = 'sawtooth';
     osc.frequency.setValueAtTime(120, now);
     osc.frequency.exponentialRampToValueAtTime(20, now + 0.35);
-    gain.gain.setValueAtTime(0.3, now);
-    gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+    gain.gain.setValueAtTime(0.3 * masterVolume, now);
+    gain.gain.linearRampToValueAtTime(0.01 * masterVolume, now + 0.35);
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     osc.start(now);
@@ -541,8 +551,8 @@ function playSound(type) {
     osc.type = 'sine';
     osc.frequency.setValueAtTime(400, now);
     osc.frequency.linearRampToValueAtTime(800, now + 0.25);
-    gain.gain.setValueAtTime(0.25, now);
-    gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+    gain.gain.setValueAtTime(0.25 * masterVolume, now);
+    gain.gain.linearRampToValueAtTime(0.01 * masterVolume, now + 0.25);
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     osc.start(now);
@@ -554,8 +564,8 @@ function playSound(type) {
       const gain = audioCtx.createGain();
       osc.type = 'sine';
       osc.frequency.setValueAtTime(freq, now + idx * 0.05);
-      gain.gain.setValueAtTime(0.2, now + idx * 0.05);
-      gain.gain.linearRampToValueAtTime(0.01, now + idx * 0.05 + 0.08);
+      gain.gain.setValueAtTime(0.2 * masterVolume, now + idx * 0.05);
+      gain.gain.linearRampToValueAtTime(0.01 * masterVolume, now + idx * 0.05 + 0.08);
       osc.connect(gain);
       gain.connect(audioCtx.destination);
       osc.start(now + idx * 0.05);
@@ -601,6 +611,7 @@ let statsUpdated = false; // set when a finished game has been recorded
 let soundEnabled = true;
 let touchFireEnabled = true;
 let prevPaused = false; // used when opening settings overlay
+let masterVolume = 1.0;
 
 function loadStats() {
   try {
@@ -1139,8 +1150,12 @@ function update(dt) {
           e.y = e.targetY;
         }
       } else {
-        e.x = e.baseX + formationOffset;
-        e.y = 100 + e.row * 58 + Math.sin(performance.now() / 700 + e.phase) * 3;
+        // Smooth formation motion to avoid jitter when changing direction
+        const desiredX = e.baseX + formationOffset;
+        const desiredY = 100 + e.row * 58 + Math.sin(performance.now() / 700 + e.phase) * 3;
+        const smoothK = Math.min(1, dt * 8); // responsiveness factor
+        e.x += (desiredX - e.x) * smoothK;
+        e.y += (desiredY - e.y) * smoothK;
       }
     }
 
@@ -1890,11 +1905,10 @@ if (finalStartBtn) {
 // Mobile control wiring
 const mobileSlider = document.getElementById('mobile-slider');
 const mobileFireBtn = document.getElementById('mobile-fire');
+const mobileSliderHint = document.getElementById('mobile-slider-hint');
 const settingsOverlayEl = document.getElementById('settings-overlay');
 const settingsCloseBtn = document.getElementById('settings-close-btn');
-const settingSound = document.getElementById('setting-sound');
-const settingTouchFire = document.getElementById('setting-touch-fire');
-const settingsPauseBtn = document.getElementById('settings-pause-btn');
+const settingSoundRange = document.getElementById('setting-sound-range');
 const settingsRestartBtn = document.getElementById('settings-restart-btn');
 
 // mobile restart button removed from controls; Restart remains in Settings overlay
@@ -1910,9 +1924,7 @@ if (topSettingsBtn) {
     isPaused = true;
     pauseBtn.textContent = "Resume (P)";
     settingsOverlayEl.classList.remove('hidden');
-    if (settingSound) settingSound.checked = !!soundEnabled;
-    if (settingTouchFire) settingTouchFire.checked = !!touchFireEnabled;
-    if (settingsPauseBtn) settingsPauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
+    if (settingSoundRange) settingSoundRange.value = Math.round(masterVolume * 100);
   });
 }
 
@@ -1932,10 +1944,13 @@ if (mobileSlider) {
       const pct = Number(e.target.value) / 100;
       const clientX = rect.left + pct * rect.width;
       handlePointer(clientX);
+      // hide the slider hint on first interaction
+      try{ if (mobileSliderHint) mobileSliderHint.style.display = 'none'; } catch(e){}
     }catch(err){}
   });
   // also support pointer events for dragging
   mobileSlider.addEventListener('pointerdown', function(e){ e.preventDefault(); });
+  mobileSlider.addEventListener('pointerdown', function(){ try{ if (mobileSliderHint) mobileSliderHint.style.display = 'none'; } catch(e){} });
 }
 if (mobileFireBtn) {
   mobileFireBtn.addEventListener('pointerdown', function(e){ e.preventDefault(); shootPlayer(); });
@@ -1956,25 +1971,17 @@ if (settingsCloseBtn) {
   });
 }
 
-if (settingSound) {
-  settingSound.addEventListener('change', (e) => {
-    soundEnabled = !!e.target.checked;
-    if (soundEnabled && !audioCtx) initAudio();
+
+// Sound volume slider handling (0-100)
+if (settingSoundRange) {
+  settingSoundRange.value = 100;
+  settingSoundRange.addEventListener('input', (e) => {
+    masterVolume = Number(e.target.value) / 100;
+    if (masterVolume > 0 && !audioCtx) initAudio();
   });
 }
 
-if (settingTouchFire) {
-  settingTouchFire.addEventListener('change', (e) => {
-    touchFireEnabled = !!e.target.checked;
-  });
-}
-
-if (settingsPauseBtn) {
-  settingsPauseBtn.addEventListener('click', () => {
-    togglePause();
-    settingsPauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
-  });
-}
+// Restart handler remains
 
 if (settingsRestartBtn) {
   settingsRestartBtn.addEventListener('click', () => {
