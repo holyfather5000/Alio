@@ -273,53 +273,100 @@
   }
 
   /* Mobile in-canvas controller (slider + fire) */
-  #mobile-controller { display:none; position: relative; width: 100%; max-width: 720px; margin-top: 6px; z-index: 8; }
-  #mobile-controller .ctrl-row { display:flex; gap:10px; align-items:center; justify-content:space-between; }
-  #mobile-controller input[type=range] { -webkit-appearance:none; width: calc(100% - 100px); height: 60px; border-radius:10px; background: linear-gradient(90deg,#1f2e42,#0f172a); }
-  #mobile-controller input[type=range] { appearance:none; }
+  #mobile-controller {
+    display:none;
+    position: relative;
+    width: min(94vw, 760px);
+    max-width: 760px;
+    margin-top: 8px;
+    z-index: 8;
+    padding: 10px 10px 12px;
+    touch-action: pan-y;
+  }
+  #mobile-controller .ctrl-row {
+    display:flex;
+    gap:12px;
+    align-items:center;
+    justify-content:space-between;
+  }
+  #mobile-controller .ctrl-row > div {
+    position:relative;
+    width:100%;
+    min-width:0;
+  }
+  #mobile-controller input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 62px;
+    border-radius: 18px;
+    background: linear-gradient(90deg,#1f2e42,#0f172a);
+    box-shadow: inset 0 0 0 1px rgba(148,163,184,0.2);
+    touch-action: pan-y;
+    pointer-events: auto;
+    padding: 0 8px;
+    margin: 0;
+  }
+  #mobile-controller input[type=range]::-webkit-slider-runnable-track {
+    height: 62px;
+    border-radius: 18px;
+    background: linear-gradient(90deg,#1f2e42,#0f172a);
+  }
+  #mobile-controller input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #f8fafc;
+    border: 3px solid rgba(59,130,246,0.9);
+    box-shadow: 0 0 0 4px rgba(59,130,246,0.2), 0 4px 12px rgba(0,0,0,0.35);
+    margin-top: 12px;
+    cursor: pointer;
+  }
+  #mobile-controller input[type=range]::-moz-range-thumb {
+    width: 38px;
+    height: 38px;
+    border: 3px solid rgba(59,130,246,0.9);
+    border-radius: 50%;
+    background: #f8fafc;
+    box-shadow: 0 0 0 4px rgba(59,130,246,0.2), 0 4px 12px rgba(0,0,0,0.35);
+    cursor: pointer;
+  }
+  #mobile-controller input[type=range]::-moz-range-track {
+    height: 62px;
+    border-radius: 18px;
+    background: linear-gradient(90deg,#1f2e42,#0f172a);
+  }
   /* Mobile fire button: keep perfect circular shape regardless of flex sizing */
   #mobile-controller .fire-btn {
-  width: 64px;
-  aspect-ratio: 1 / 1;
-  height: auto;
-  min-height: 64px;
-  border-radius: 50%;
-  padding: 0;
-  box-sizing: border-box;
-  
-  /* Modern glassmorphism look with a vibrant center */
-  background: radial-gradient(circle at center, rgba(255, 46, 46, 0.85) 0%, rgba(20, 20, 25, 0.6) 100%);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  
-  /* Sleek, thin high-contrast border ring */
-  border: 1px solid rgba(255, 77, 77, 0.5);
-  
-  /* Combined crisp drop shadow and a subtle neon inner glow */
-  box-shadow: 
-    0 8px 24px rgba(0, 0, 0, 0.3),
-    inset 0 0 12px rgba(255, 46, 46, 0.4);
-  
-  /* Layout and positioning */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  overflow: hidden;
-  
-  /* Smooth micro-interaction transition */
-  transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), filter 0.12s ease;
-  cursor: pointer;
-}
-
-/* Modern tactile feedback when tapped */
-#mobile-controller .fire-btn:active {
-  transform: scale(0.92);
-  filter: brightness(1.2);
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.4),
-    inset 0 0 18px rgba(255, 46, 46, 0.7);
-}
+    width: 72px;
+    aspect-ratio: 1 / 1;
+    height: auto;
+    min-height: 72px;
+    border-radius: 50%;
+    padding: 0;
+    box-sizing: border-box;
+    background: linear-gradient(180deg, #b92f2f 0%, #d10000 100%);
+    border: 2px solid rgba(255, 40, 40, 0.35);
+    box-shadow: 0 8px 18px rgba(255,40,40,0.25);
+    color: #fff;
+    font-weight: 900;
+    font-size: 0px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    line-height: 1;
+    overflow: hidden;
+    opacity: 0.95;
+    transition: transform 0.12s ease, filter 0.12s ease;
+    cursor: pointer;
+  }
+  #mobile-controller .fire-btn:active {
+    transform: scale(0.92);
+    filter: brightness(1.15);
+  }
   @media (max-width:640px) { #mobile-controller { display:block; } }
 
   /* slider hint overlay */
@@ -489,18 +536,17 @@ function resizeCanvas() {
   const windowWidth = window.innerWidth;
   const windowHeight = window.innerHeight;
   const targetRatio = W / H;
-  // prefer 96% of viewport width on small touch devices
   let newWidth = windowWidth;
-    if (typeof isTouchDevice !== 'undefined' && isTouchDevice && windowWidth <= 640) {
-    // use a slightly larger width on mobile for better visibility
-    newWidth = Math.floor(windowWidth * 0.98);
+  if (typeof isTouchDevice !== 'undefined' && isTouchDevice && windowWidth <= 640) {
+    newWidth = Math.min(Math.floor(windowWidth * 0.92), 520);
+    if (newWidth < 320) newWidth = 320;
   }
   let newHeight = newWidth / targetRatio;
 
   // Limit drawing area for very small mobile screens so the whole game fits (account for HUD/controls)
-  let controlReserve = (typeof isTouchDevice !== 'undefined' && isTouchDevice) ? 80 : 0;
-  if ((typeof isTouchDevice !== 'undefined' && isTouchDevice) && windowWidth <= 360) controlReserve = 120;
-  const availHeight = Math.max(windowHeight * 0.62, windowHeight - 140 - controlReserve);
+  let controlReserve = (typeof isTouchDevice !== 'undefined' && isTouchDevice) ? 90 : 0;
+  if ((typeof isTouchDevice !== 'undefined' && isTouchDevice) && windowWidth <= 360) controlReserve = 130;
+  const availHeight = Math.max(windowHeight * 0.62, windowHeight - 160 - controlReserve);
   if (newHeight > availHeight) {
     newHeight = availHeight;
     newWidth = Math.floor(newHeight * targetRatio);
@@ -644,6 +690,7 @@ let enemyBullets = [];
 let particles = [];
 let confetti = [];
 let player;
+const touchScaleFactor = isTouchDevice ? 1.18 : 1;
 // Player statistics persisted in localStorage
 let stats = { highScore: 0, gamesPlayed: 0, wins: 0, bestWave: 0, totalScore: 0 };
 let statsUpdated = false; // set when a finished game has been recorded
@@ -729,11 +776,12 @@ function resetGame() {
   const finalEl = document.getElementById('final-overlay'); if (finalEl) finalEl.classList.add('hidden');
   const unlockEl = document.getElementById('unlock-overlay'); if (unlockEl) unlockEl.classList.add('hidden');
   enemies = [];
+  const playerScale = isTouchDevice ? 1.18 : 1;
   player = {
     x: W / 2,
     y: H - 85,
-    width: 38,
-    height: 30,
+    width: 38 * playerScale,
+    height: 30 * playerScale,
     speed: 450,
     invincible: 0
   };
@@ -763,12 +811,13 @@ function createWave() {
   enemies = [];
   const isBossWave = wave % 5 === 0;
 
+  const mobileEnemyScale = isTouchDevice ? 1.18 : 1;
   if (isBossWave) {
     const bossTier = wave / 5;
     let hp = 10 + bossTier * 8;
     // Final boss (tier 6) is tougher: double health
     if (bossTier === 6) hp = hp * 2;
-    const size = Math.min(80, 50 + bossTier * 5);
+    const size = Math.min(80, 50 + bossTier * 5) * mobileEnemyScale;
 
     enemies.push({
       x: W / 2,
@@ -799,7 +848,7 @@ function createWave() {
         id: nextEnemyId++,
         row: 1,
         col: 0,
-        size: 38,
+        size: 38 * mobileEnemyScale,
         boss: false,
         miniBoss: true,
         hp: 3,
@@ -819,7 +868,7 @@ function createWave() {
         id: nextEnemyId++,
         row: 1,
         col: 0,
-        size: 38,
+        size: 38 * mobileEnemyScale,
         boss: false,
         miniBoss: true,
         hp: 3,
@@ -838,7 +887,7 @@ function createWave() {
         id: nextEnemyId++,
         row: 1,
         col: 1,
-        size: 38,
+        size: 38 * mobileEnemyScale,
         boss: false,
         miniBoss: true,
         hp: 3,
@@ -871,6 +920,7 @@ function createWave() {
       // After wave 4, ~10% of regular squares become purple elites with 2x HP
       const isPurple = (!isMini && wave > 4 && Math.random() < 0.10);
       const hp = isMini ? 3 : (isPurple ? 2 : 1);
+      const baseSize = isMini ? 38 : 28;
 
       enemies.push({
         id: nextEnemyId++,
@@ -879,7 +929,7 @@ function createWave() {
         baseX: x,
         row: row,
         col: col,
-        size: isMini ? 38 : 28,
+        size: baseSize * mobileEnemyScale,
         boss: false,
         miniBoss: isMini,
         returning: false,
@@ -911,16 +961,15 @@ function shootPlayer() {
   if (isPowered) powerShots--;
 
   if (unlockedLaser) {
-    // Fire a straight red laser beam
-    // laser is a fast projectile that's 3x the regular bullet length
+    const laserMultiplier = isTouchDevice ? 1.15 : 1;
     bullets.push({
       x: player.x,
       y: player.y - 22,
       vx: 0,
       vy: -720,
-      radius: 3,
+      radius: 3 * laserMultiplier,
       laser: true,
-      length: 48
+      length: 48 * laserMultiplier
     });
     playSound('power_laser');
     playerShotCooldown = 0.08;
@@ -930,7 +979,7 @@ function shootPlayer() {
       y: player.y - 22,
       vx: 0,
       vy: -720,
-      radius: isPowered ? 8 : 4,
+      radius: (isPowered ? 8 : 4) * (isTouchDevice ? 1.15 : 1),
       powered: isPowered
     });
     playSound(isPowered ? 'power_laser' : 'laser');
@@ -951,7 +1000,7 @@ function shootEnemy(enemy) {
         y: enemy.y + enemy.size / 2,
         vx: 0,
         vy: bulletSpeed * 0.8,
-        radius: 14,
+        radius: 14 * (isTouchDevice ? 1.15 : 1),
         alpha: 1,
         isHeart: true
       , ownerId: enemy.id});
@@ -973,16 +1022,16 @@ function shootEnemy(enemy) {
         // Give a little horizontal velocity proportional to offset
         const vx = (offsetX / spacing) * 50;
         const vy = bulletSpeed + Math.abs(vx) * 0.5;
-        enemyBullets.push({ x: enemy.x + offsetX, y: enemy.y + enemy.size / 2, vx: vx, vy: vy, radius: 8, alpha: 1, isHeart: false, ownerId: enemy.id });
+        enemyBullets.push({ x: enemy.x + offsetX, y: enemy.y + enemy.size / 2, vx: vx, vy: vy, radius: 8 * (isTouchDevice ? 1.15 : 1), alpha: 1, isHeart: false, ownerId: enemy.id });
       }
     }
   } else if (enemy.miniBoss) {
     // Mini-boss bullets use same shape as regular but are tinted pink
-    enemyBullets.push({ x: enemy.x - 12, y: enemy.y + enemy.size / 2, vx: -20, vy: bulletSpeed, radius: 7, alpha: 1, isHeart: false, tint: 'mini', ownerId: enemy.id });
-    enemyBullets.push({ x: enemy.x + 12, y: enemy.y + enemy.size / 2, vx: 20, vy: bulletSpeed, radius: 7, alpha: 1, isHeart: false, tint: 'mini', ownerId: enemy.id });
+    enemyBullets.push({ x: enemy.x - 12, y: enemy.y + enemy.size / 2, vx: -20, vy: bulletSpeed, radius: 7 * (isTouchDevice ? 1.15 : 1), alpha: 1, isHeart: false, tint: 'mini', ownerId: enemy.id });
+    enemyBullets.push({ x: enemy.x + 12, y: enemy.y + enemy.size / 2, vx: 20, vy: bulletSpeed, radius: 7 * (isTouchDevice ? 1.15 : 1), alpha: 1, isHeart: false, tint: 'mini', ownerId: enemy.id });
   } else {
     // Regular enemy shot. If this enemy is a back-row fast shooter, tag the bullet for tint and slightly faster velocity
-    const regularBullet = { x: enemy.x, y: enemy.y + enemy.size / 2, vx: 0, vy: bulletSpeed, radius: 7, alpha: 1, isHeart: false };
+    const regularBullet = { x: enemy.x, y: enemy.y + enemy.size / 2, vx: 0, vy: bulletSpeed, radius: 7 * (isTouchDevice ? 1.15 : 1), alpha: 1, isHeart: false };
     if (enemy.fastShooter) {
       regularBullet.tint = 'back';
       regularBullet.vy = bulletSpeed + 40; // slightly faster
@@ -1976,6 +2025,17 @@ try {
 
 // Wire new mobile slider and fire controls
 if (mobileSlider) {
+  const updateSliderPosition = (clientX) => {
+    try {
+      const rect = mobileSlider.getBoundingClientRect();
+      const pct = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+      mobileSlider.value = String(Math.round(pct * 100));
+      const targetX = canvas.getBoundingClientRect().left + pct * canvas.getBoundingClientRect().width;
+      handlePointer(targetX);
+      if (mobileSliderHint) mobileSliderHint.style.display = 'none';
+    } catch (err) {}
+  };
+
   // initialize slider position to center
   mobileSlider.value = 50;
   mobileSlider.addEventListener('input', function(e){
@@ -1988,8 +2048,10 @@ if (mobileSlider) {
       try{ if (mobileSliderHint) mobileSliderHint.style.display = 'none'; } catch(e){}
     }catch(err){}
   });
-  // also support pointer events for dragging
-  mobileSlider.addEventListener('pointerdown', function(e){ e.preventDefault(); });
+  mobileSlider.addEventListener('pointerdown', function(e){ e.preventDefault(); updateSliderPosition(e.clientX); });
+  mobileSlider.addEventListener('pointermove', function(e){ if (e.pointerType === 'touch' || e.pressure > 0) { e.preventDefault(); updateSliderPosition(e.clientX); } }, { passive: false });
+  mobileSlider.addEventListener('touchstart', function(e){ e.preventDefault(); updateSliderPosition(e.touches[0].clientX); }, { passive: false });
+  mobileSlider.addEventListener('touchmove', function(e){ e.preventDefault(); updateSliderPosition(e.touches[0].clientX); }, { passive: false });
   mobileSlider.addEventListener('pointerdown', function(){ try{ if (mobileSliderHint) mobileSliderHint.style.display = 'none'; } catch(e){} });
 }
 if (mobileFireBtn) {
