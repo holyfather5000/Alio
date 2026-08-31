@@ -265,6 +265,11 @@
     .menu-box { padding: 14px; }
   }
 
+  /* ensure container stacks vertically on narrow screens so HUD sits above the canvas */
+  @media (max-width: 640px) {
+    .viewport-container { flex-direction: column; align-items: center; }
+  }
+
   /* Mobile in-canvas controller (slider + fire) */
   #mobile-controller { display:none; position: relative; width: 100%; max-width: 720px; margin-top: 6px; z-index: 8; }
   #mobile-controller .ctrl-row { display:flex; gap:10px; align-items:center; justify-content:space-between; }
@@ -345,9 +350,8 @@
     </div>
   </div>
 
-  <!-- Mobile on-screen control bar -->
+  <!-- Mobile on-screen control bar (Settings icon only) -->
   <div id="mobile-controls" class="mobile-controls" aria-hidden="true">
-    <button id="mobile-restart-btn" class="m-btn">Restart</button>
     <button id="mobile-settings-btn" class="m-btn">Settings</button>
   </div>
 
@@ -428,8 +432,8 @@ function resizeCanvas() {
 
   // Limit drawing area for very small mobile screens so the whole game fits (account for HUD/controls)
   // If touch device, reserve extra vertical space for mobile controls
-  let controlReserve = (typeof isTouchDevice !== 'undefined' && isTouchDevice) ? 80 : 0;
-  if ((typeof isTouchDevice !== 'undefined' && isTouchDevice) && windowWidth <= 360) controlReserve = 120;
+  let controlReserve = (typeof isTouchDevice !== 'undefined' && isTouchDevice) ? 110 : 0;
+  if ((typeof isTouchDevice !== 'undefined' && isTouchDevice) && windowWidth <= 360) controlReserve = 200;
   const availHeight = Math.max(windowHeight * 0.62, windowHeight - 140 - controlReserve);
   if (newHeight > availHeight) {
     newHeight = availHeight;
@@ -1808,21 +1812,12 @@ if (playBtn) {
   console.warn('playBtn not found');
 }
 
-// Improve responsiveness for mobile control buttons
+// Improve responsiveness for mobile control buttons (settings only)
 {
-  const mp = document.getElementById('mobile-pause-btn');
-  if (mp) {
-    mp.addEventListener('pointerdown', (e) => { e.preventDefault(); togglePause(); });
-    mp.addEventListener('touchend', (e) => { e.preventDefault(); togglePause(); }, { passive: false });
-  }
-  const mr = document.getElementById('mobile-restart-btn');
-  if (mr) {
-    mr.addEventListener('pointerdown', (e) => { e.preventDefault(); resetGame(); });
-    mr.addEventListener('touchend', (e) => { e.preventDefault(); resetGame(); }, { passive: false });
-  }
   const ms = document.getElementById('mobile-settings-btn');
   if (ms) {
     ms.addEventListener('pointerdown', (e) => { e.preventDefault(); ms.click(); });
+    ms.addEventListener('touchend', (e) => { e.preventDefault(); ms.click(); }, { passive: false });
   }
 }
 
@@ -1875,7 +1870,6 @@ if (finalStartBtn) {
 }
 
 // Mobile control wiring
-const mobileRestartBtn = document.getElementById('mobile-restart-btn');
 const mobileSettingsBtn = document.getElementById('mobile-settings-btn');
 const mobileSlider = document.getElementById('mobile-slider');
 const mobileFireBtn = document.getElementById('mobile-fire');
