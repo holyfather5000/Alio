@@ -379,6 +379,19 @@
       document.addEventListener('pointerdown', function(e){ log('pointerdown on ' + (e.target && e.target.id? e.target.id : e.target.tagName)); }, {passive:false});
       document.addEventListener('touchstart', function(e){ log('touchstart on ' + (e.target && e.target.id? e.target.id : e.target.tagName)); }, {passive:false});
 
+      // After DOM ready, log presence and geometry of key controls
+      document.addEventListener('DOMContentLoaded', function(){
+        try{
+          var play = $id('play-btn');
+          if (play) log('play-btn present; rect=' + JSON.stringify(play.getBoundingClientRect())); else log('play-btn MISSING');
+          var mob = $id('mobile-controls');
+          if (mob) log('mobile-controls display=' + getComputedStyle(mob).display + ' rect=' + JSON.stringify(mob.getBoundingClientRect())); else log('mobile-controls MISSING');
+          // log more touch-related diagnostics
+          log('navigator.maxTouchPoints=' + (navigator.maxTouchPoints||0) + ' matchMedia(pointer:coarse)=' + (window.matchMedia && window.matchMedia('(pointer:coarse)').matches));
+          // test firing a synthetic focus? not needed.
+        }catch(e){ log('DOM diagnostic error: ' + e); }
+      });
+
       // Close button
       $id('dbg-close').addEventListener('click', function(){ var p = $id('debug-panel'); if(p) p.style.display='none'; });
 
@@ -410,19 +423,32 @@
 <script>
 "use strict";
 
-// Detect touch devices early and mark DOM so CSS + JS can adapt immediately
-const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+// Detect touch devices early (robust) and mark DOM so CSS + JS can adapt immediately
+function detectTouchDevice() {
+  try {
+    const params = new URLSearchParams(location.search);
+    const forceMobile = params.get('mobile') === '1' || params.get('forceMobile') === '1';
+    const hasOntouch = ('ontouchstart' in window);
+    const maxTouch = (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+    const coarsePointer = window.matchMedia && window.matchMedia('(pointer:coarse)').matches;
+    const uaMobile = /Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent);
+    return !!(forceMobile || hasOntouch || maxTouch || coarsePointer || uaMobile);
+  } catch (e) { return false; }
+}
+const isTouchDevice = detectTouchDevice();
 if (isTouchDevice) document.documentElement.classList.add('is-touch');
 
 // Apply immediate DOM tweaks for touch devices (in case CSS caching delays)
 if (isTouchDevice) {
-  const desktopCards = document.querySelectorAll('.controls-card');
-  desktopCards.forEach(c => c.style.display = 'none');
-  const mobileCards = document.querySelectorAll('.controls-card-mobile');
-  mobileCards.forEach(c => c.style.display = 'block');
-  // simplify pause label
-  if (pauseBtn) pauseBtn.textContent = 'Pause';
-  const mp = document.getElementById('mobile-pause-btn'); if (mp) mp.textContent = 'Pause';
+  try {
+    const desktopCards = document.querySelectorAll('.controls-card');
+    desktopCards.forEach(c => c.style.display = 'none');
+    const mobileCards = document.querySelectorAll('.controls-card-mobile');
+    mobileCards.forEach(c => c.style.display = 'block');
+    // simplify pause label (use live lookup to avoid referencing vars before declaration)
+    const pb = document.getElementById('pause-btn'); if (pb) pb.textContent = 'Pause';
+    const mp = document.getElementById('mobile-pause-btn'); if (mp) mp.textContent = 'Pause';
+  } catch (e) { /* ignore */ }
 }
 try { const st = document.getElementById('script-status'); if (st) st.textContent = 'script: touch=' + (isTouchDevice? 'yes':'no'); } catch(e) {}
 
@@ -1817,15 +1843,19 @@ canvas.addEventListener("touchmove", e => {
 }, { passive: true });
 
 canvas.addEventListener("click", () => shootPlayer());
-playBtn.addEventListener("click", startGame);
-// Support immediate touch on some mobile browsers: start on pointerdown for touch
-playBtn.addEventListener('pointerdown', (e) => {
-  e.preventDefault();
-  startGame();
-});
-// Also handle touchend for older Safari
-playBtn.addEventListener('touchend', (e) => { e.preventDefault(); startGame(); try{ const st = document.getElementById('script-status'); if (st) st.textContent = 'script: start-pressed'; }catch(e){} }, { passive: false });
-if (playBtn) playBtn.style.touchAction = 'manipulation';
+if (playBtn) {
+  playBtn.addEventListener("click", startGame);
+  // Support immediate touch on some mobile browsers: start on pointerdown for touch
+  playBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    startGame();
+  });
+  // Also handle touchend for older Safari
+  playBtn.addEventListener('touchend', (e) => { e.preventDefault(); startGame(); try{ const st = document.getElementById('script-status'); if (st) st.textContent = 'script: start-pressed'; }catch(e){} }, { passive: false });
+  playBtn.style.touchAction = 'manipulation';
+} else {
+  try { const ss = document.getElementById('script-status'); if (ss) ss.textContent = 'script: no-play-btn'; } catch(e) {}
+}
 
 // Improve responsiveness for mobile control buttons
 {
