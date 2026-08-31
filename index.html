@@ -275,6 +275,7 @@
   #mobile-controller .ctrl-row { display:flex; gap:10px; align-items:center; justify-content:space-between; }
   #mobile-controller input[type=range] { -webkit-appearance:none; width: calc(100% - 86px); height: 10px; border-radius:10px; background: linear-gradient(90deg,#334155,#0f172a); }
   #mobile-controller .fire-btn { width:70px; height:70px; border-radius:50%; background:linear-gradient(180deg,#ff4d4d,#d10000); border:3px solid rgba(255,80,80,0.15); box-shadow:0 6px 18px rgba(209,16,16,0.35); color:#fff; font-weight:900; font-size:16px; display:flex; align-items:center; justify-content:center; }
+  #mobile-controller .fire-btn { width:70px; height:70px; border-radius:50%; background:linear-gradient(180deg,#ff9b9b 0%, #ff6b6b 100%); border:2px solid rgba(255,80,80,0.08); box-shadow:0 6px 18px rgba(209,16,16,0.18); color:#fff; font-weight:900; font-size:16px; display:flex; align-items:center; justify-content:center; }
   @media (max-width:640px) { #mobile-controller { display:block; } }
 
   /* Desktop: hide mobile-only control text */
@@ -292,7 +293,11 @@
     <div class="hud-item">SCORE: <b id="score">0</b></div>
     <div class="hud-item">WAVE: <b id="wave">1</b></div>
     <div class="hud-item">LIVES: <b id="lives">3</b></div>
-    <div class="hud-item">HIGH: <b id="highscore">0</b></div>
+    <div class="hud-item" style="padding:4px 8px;">
+      <button id="top-settings-btn" class="hud-btn" title="Settings" aria-label="Settings" style="padding:6px; display:flex; align-items:center; justify-content:center;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7zm8.94-2.5a1 1 0 0 0-.08-.36l-1.1-2.03a1 1 0 0 0-.87-.52l-2.2-.18a6.97 6.97 0 0 0-1.1-1.9l.9-2.03a1 1 0 0 0-.12-1.05l-1.5-1.5a1 1 0 0 0-1.05-.12L12.9 3.7a6.97 6.97 0 0 0-1.9-1.1l-.18-2.2a1 1 0 0 0-.52-.87L7.1 0.1A1 1 0 0 0 6.74 0h-1.48A1 1 0 0 0 4.3.4L2.3 2.9a1 1 0 0 0-.12 1.05l.9 2.03a6.97 6.97 0 0 0-1.1 1.9l-2.2.18a1 1 0 0 0-.87.52L.14 13.14a1 1 0 0 0 0 .72l1.1 2.03c.13.25.38.42.67.45l2.2.18c.3.71.7 1.36 1.1 1.9l-.9 2.03a1 1 0 0 0 .12 1.05l1.5 1.5c.3.3.73.44 1.14.34l2.03-.9c.56.4 1.19.8 1.9 1.1l.18 2.2c.03.28.2.54.45.67l2.03 1.1a1 1 0 0 0 .72 0l2.03-1.1c.25-.13.42-.38.45-.67l.18-2.2c.71-.3 1.36-.7 1.9-1.1l2.03.9c.4.1.84-.04 1.14-.34l1.5-1.5a1 1 0 0 0 .12-1.05l-.9-2.03c.4-.56.8-1.19 1.1-1.9l2.2-.18c.29-.03.54-.2.67-.45l1.1-2.03c.13-.25.13-.56 0-.81z" fill="#cbd5e1"/></svg>
+      </button>
+    </div>
     <button id="pause-btn" class="hud-btn">Pause (P)</button>
   </div>
 
@@ -302,7 +307,7 @@
   <div id="mobile-controller">
     <div class="ctrl-row">
       <input id="mobile-slider" type="range" min="0" max="100" value="50" />
-      <button id="mobile-fire" class="fire-btn">FIRE</button>
+      <button id="mobile-fire" class="fire-btn" aria-label="Fire" title="Fire"></button>
     </div>
   </div>
 
@@ -352,7 +357,9 @@
 
   <!-- Mobile on-screen control bar (Settings icon only) -->
   <div id="mobile-controls" class="mobile-controls" aria-hidden="true">
-    <button id="mobile-settings-btn" class="m-btn">Settings</button>
+    <button id="mobile-settings-btn" class="m-btn" aria-label="Settings" title="Settings" style="padding:8px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7zm8.94-2.5a1 1 0 0 0-.08-.36l-1.1-2.03a1 1 0 0 0-.87-.52l-2.2-.18a6.97 6.97 0 0 0-1.1-1.9l.9-2.03a1 1 0 0 0-.12-1.05l-1.5-1.5a1 1 0 0 0-1.05-.12L12.9 3.7a6.97 6.97 0 0 0-1.9-1.1l-.18-2.2a1 1 0 0 0-.52-.87L7.1 0.1A1 1 0 0 0 6.74 0h-1.48A1 1 0 0 0 4.3.4L2.3 2.9a1 1 0 0 0-.12 1.05l.9 2.03a6.97 6.97 0 0 0-1.1 1.9l-2.2.18a1 1 0 0 0-.87.52L.14 13.14a1 1 0 0 0 0 .72l1.1 2.03c.13.25.38.42.67.45l2.2.18c.3.71.7 1.36 1.1 1.9l-.9 2.03a1 1 0 0 0 .12 1.05l1.5 1.5c.3.3.73.44 1.14.34l2.03-.9c.56.4 1.19.8 1.9 1.1l.18 2.2c.03.28.2.54.45.67l2.03 1.1a1 1 0 0 0 .72 0l2.03-1.1c.25-.13.42-.38.45-.67l.18-2.2c.71-.3 1.36-.7 1.9-1.1l2.03.9c.4.1.84-.04 1.14-.34l1.5-1.5a1 1 0 0 0 .12-1.05l-.9-2.03c.4-.56.8-1.19 1.1-1.9l2.2-.18c.29-.03.54-.2.67-.45l1.1-2.03c.13-.25.13-.56 0-.81z" fill="#cbd5e1"/></svg>
+    </button>
   </div>
 
   <!-- Mobile version badge (visible on touch devices) -->
@@ -426,18 +433,20 @@ function resizeCanvas() {
   const windowWidth = window.innerWidth;
   const windowHeight = window.innerHeight;
   const targetRatio = W / H;
-
+  // prefer 96% of viewport width on small touch devices
   let newWidth = windowWidth;
-  let newHeight = windowWidth / targetRatio;
+  if (typeof isTouchDevice !== 'undefined' && isTouchDevice && windowWidth <= 640) {
+    newWidth = Math.floor(windowWidth * 0.96);
+  }
+  let newHeight = newWidth / targetRatio;
 
   // Limit drawing area for very small mobile screens so the whole game fits (account for HUD/controls)
-  // If touch device, reserve extra vertical space for mobile controls
-  let controlReserve = (typeof isTouchDevice !== 'undefined' && isTouchDevice) ? 110 : 0;
-  if ((typeof isTouchDevice !== 'undefined' && isTouchDevice) && windowWidth <= 360) controlReserve = 200;
+  let controlReserve = (typeof isTouchDevice !== 'undefined' && isTouchDevice) ? 80 : 0;
+  if ((typeof isTouchDevice !== 'undefined' && isTouchDevice) && windowWidth <= 360) controlReserve = 120;
   const availHeight = Math.max(windowHeight * 0.62, windowHeight - 140 - controlReserve);
   if (newHeight > availHeight) {
     newHeight = availHeight;
-    newWidth = newHeight * targetRatio;
+    newWidth = Math.floor(newHeight * targetRatio);
   }
 
   canvas.style.width = `${newWidth}px`;
@@ -1880,15 +1889,7 @@ const settingTouchFire = document.getElementById('setting-touch-fire');
 const settingsPauseBtn = document.getElementById('settings-pause-btn');
 const settingsRestartBtn = document.getElementById('settings-restart-btn');
 
-if (mobileRestartBtn) {
-  mobileRestartBtn.addEventListener('click', () => {
-    // restart immediately
-    resetGame();
-    // hide overlays that might be visible
-    if (settingsOverlayEl) settingsOverlayEl.classList.add('hidden');
-    const winEl = document.getElementById('win-overlay'); if (winEl) winEl.classList.add('hidden');
-  });
-}
+// mobile restart button removed from controls; Restart remains in Settings overlay
 
 if (mobileSettingsBtn) {
   mobileSettingsBtn.addEventListener('click', () => {
@@ -1900,6 +1901,21 @@ if (mobileSettingsBtn) {
     const mpBtn = document.getElementById('mobile-pause-btn'); if (mpBtn) mpBtn.textContent = 'Resume';
     settingsOverlayEl.classList.remove('hidden');
     // reflect current settings
+    if (settingSound) settingSound.checked = !!soundEnabled;
+    if (settingTouchFire) settingTouchFire.checked = !!touchFireEnabled;
+    if (settingsPauseBtn) settingsPauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
+  });
+}
+
+// Top settings cog opens the same overlay
+const topSettingsBtn = document.getElementById('top-settings-btn');
+if (topSettingsBtn) {
+  topSettingsBtn.addEventListener('click', () => {
+    if (!settingsOverlayEl) return;
+    prevPaused = isPaused;
+    isPaused = true;
+    pauseBtn.textContent = "Resume (P)";
+    settingsOverlayEl.classList.remove('hidden');
     if (settingSound) settingSound.checked = !!soundEnabled;
     if (settingTouchFire) settingTouchFire.checked = !!touchFireEnabled;
     if (settingsPauseBtn) settingsPauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
