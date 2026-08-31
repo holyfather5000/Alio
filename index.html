@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Alio</title>
- <script src="https://jsdelivr.net"></script>
 <link rel="icon" type="image/png" href="alio-fav.png">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -300,8 +299,6 @@
     .controls-card-mobile { display: block; margin-top: 18px; padding: 12px; font-size: 15px; background: rgba(4,9,20,0.6); border-radius:8px; }
   }
 </style>
-<!-- Supabase client (fill in your own keys below) -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -352,19 +349,12 @@
         Games: <b id="stat-games">0</b> &nbsp; Wins: <b id="stat-wins">0</b><br>
         Best Wave: <b id="stat-bestwave">0</b> &nbsp; High Score: <b id="stat-high">0</b>
       </div>
-      <div id="start-leaderboard-panel" style="margin-top:12px; text-align:left;">
-        <strong style="font-size:16px; display:block; margin-bottom:8px;">Top Scores</strong>
-        <div id="start-leaderboard-list" style="max-height:200px; overflow:auto; background:rgba(2,6,12,0.2); padding:8px; border-radius:8px; color:#dbeafe;"></div>
-      </div>
     </div>
   </div>
   <div id="win-overlay" class="overlay-screen hidden">
     <div class="menu-box">
       <div class="subtitle">Earth is safe — congratulations!</div>
-      <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
-        <button id="submit-score-btn" class="play-btn">Submit Score</button>
-        <button id="win-restart-btn" class="play-btn">Play Again</button>
-      </div>
+      <button id="win-restart-btn" class="play-btn">Play Again</button>
     </div>
   </div>
   <div id="unlock-overlay" class="overlay-screen hidden">
@@ -397,21 +387,10 @@
         <input id="setting-sound-range" type="range" min="0" max="100" value="100" style="width:80%;" />
 </div>
 <br />
-        <div style="margin-top:10px; display:flex; gap:10px; justify-content:center;">
-          <button id="open-leaderboard-btn" class="play-btn" style="padding:8px 12px; font-size:0.95rem;">Leaderboard</button>
-        </div>
-        <div class="settings-actions" style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
-          <button id="settings-restart-btn" class="play-btn" style="padding-bottom: 10px;text-transform: none; font-size: 1rem">Restart</button>
-          <button id="settings-close-btn" class="play-btn" style="padding-bottom: 10px;text-transform: none; font-size: 1rem;">Back to Game</button>
-        </div>
-
-        <div id="leaderboard-panel" class="hidden" style="margin-top:12px; text-align:left;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <strong style="font-size:16px;">Leaderboard</strong>
-            <button id="leaderboard-close-btn" class="play-btn" style="padding:6px 10px; font-size:12px;">Close</button>
-          </div>
-          <div id="leaderboard-list" style="max-height:260px; overflow:auto; background:rgba(2,6,12,0.3); padding:8px; border-radius:8px;"></div>
-        </div>
+      <div class="settings-actions" style="display:flex; gap:10px; justify-content:center;">
+        <button id="settings-restart-btn" class="play-btn" style="padding-bottom: 10px;text-transform: none; font-size: 1rem">Restart</button><br />
+        <button id="settings-close-btn" class="play-btn" style="padding-bottom: 10px;text-transform: none; font-size: 1rem;">Back to Game</button>
+      </div>
     </div>
   </div>
 </div>
@@ -631,71 +610,6 @@ let touchFireEnabled = true;
 let prevPaused = false; // used when opening settings overlay
 let masterVolume = 1.0;
 
-// --- Supabase configuration ---
-// Replace these with your Supabase project values. Use the anon/public key (not the service_role key) for client-side.
-const SUPABASE_URL = "https://dkkcsutocbwebuymwhyf.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_msxi2e1Sxw4bvh4zfrvKzg_uT6EWfiR";
-let supabaseClient = null;
-
-function initSupabase() {
-  try {
-    if (!window.supabase) return;
-    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return;
-    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.log('Supabase initialized');
-  } catch (err) { console.warn('Supabase init failed', err); }
-}
-
-// Submit a score (name optional). Table expected: 'leaderboard' with columns (id, name, score, wave, created_at)
-async function submitHighScorePrompt() {
-  if (!supabaseClient) { initSupabase(); if (!supabaseClient) { alert('Supabase not configured. Please set SUPABASE_URL and SUPABASE_ANON_KEY in the HTML.'); return; } }
-  try {
-    const defaultName = (localStorage.getItem('alioName') || 'Player');
-    let name = (prompt('Enter name for leaderboard (max 8 chars):', defaultName) || 'Player').slice(0,8);
-    name = name.trim() || 'Player';
-    try { localStorage.setItem('alioName', name); } catch(e){}
-    await submitHighScore(name, score || 0, wave || 0);
-  } catch (err) { console.warn(err); alert('Submit failed'); }
-}
-
-// Core submit with duplicate protection
-async function submitHighScore(name, scoreVal, waveVal) {
-  if (!supabaseClient) initSupabase();
-  if (!supabaseClient) { alert('Supabase not configured'); return; }
-  const key = 'lastSubmittedLeaderboard';
-  try {
-    const lastRaw = localStorage.getItem(key);
-    const last = lastRaw ? JSON.parse(lastRaw) : null;
-    if (last && last.name === name && last.score === scoreVal && last.wave === waveVal) {
-      console.log('Duplicate submission prevented');
-      return;
-    }
-  } catch (e) { /* ignore parse errors */ }
-
-  try {
-    const payload = { name: name, score: scoreVal, wave: waveVal };
-    const { data, error } = await supabaseClient.from('leaderboard').insert([payload]);
-    if (error) {
-      console.warn('Supabase insert error', error);
-      alert('Failed to submit score: ' + (error.message || error));
-    } else {
-      try { localStorage.setItem(key, JSON.stringify({ name: name, score: scoreVal, wave: waveVal })); } catch(e){}
-      alert('Score submitted, thanks!');
-      try { if (leaderboardPanel && !leaderboardPanel.classList.contains('hidden')) showLeaderboard(); } catch(e){}
-    }
-  } catch (err) { console.warn(err); alert('Submit failed'); }
-}
-
-// Fetch top N high scores
-async function fetchHighScores(limit = 10) {
-  if (!supabaseClient) { initSupabase(); if (!supabaseClient) return []; }
-  try {
-    const { data, error } = await supabaseClient.from('leaderboard').select('name,score,wave,created_at').order('score', { ascending: false }).limit(limit);
-    if (error) { console.warn('Supabase fetch error', error); return []; }
-    return data || [];
-  } catch (err) { console.warn(err); return []; }
-}
-
 function loadStats() {
   try {
     const raw = localStorage.getItem('alienSmasherStats');
@@ -723,10 +637,6 @@ function finalizeStats(win) {
   statsUpdated = true;
   saveStats();
   updateStatsUI();
-  // If this was a win, auto-prompt to submit the score (duplicate-protected)
-  if (win) {
-    setTimeout(() => { try { submitHighScorePrompt(); } catch(e){} }, 600);
-  }
 }
 
 function updateStatsUI() {
@@ -835,7 +745,6 @@ function createWave() {
       dive: false,
       diveT: 0,
       diveDir: 1,
-      heartCount: 0,
       hitTimer: 0
     });
 
@@ -992,10 +901,8 @@ function shootEnemy(enemy) {
   const bulletSpeed = 200 + wave * 10;
 
   if (enemy.boss) {
-    // Small chance to release a heart pickup, but cap active hearts per boss to 3
-    const existingHearts = enemyBullets.filter(b => b.ownerId === enemy.id && b.isHeart).length;
-    const wantHeart = Math.random() < 0.05;
-    if (wantHeart && existingHearts < 3) {
+    const isHeartShot = Math.random() < 0.05; // 5% probability heart shot
+    if (isHeartShot) {
       enemyBullets.push({
         x: enemy.x,
         y: enemy.y + enemy.size / 2,
@@ -1003,9 +910,8 @@ function shootEnemy(enemy) {
         vy: bulletSpeed * 0.8,
         radius: 14,
         alpha: 1,
-        isHeart: true,
-        ownerId: enemy.id
-      });
+        isHeart: true
+      , ownerId: enemy.id});
     } else {
       // Determine bullet count based on boss tier. Base 3 bullets; starting at boss tier 3 add +1 per tier.
       const tier = enemy.bossTier || Math.max(1, Math.floor(wave / 5));
@@ -1961,69 +1867,6 @@ if (winRestartBtn) {
   });
 }
 
-// Submit high score button
-const submitScoreBtn = document.getElementById('submit-score-btn');
-if (submitScoreBtn) {
-  submitScoreBtn.addEventListener('click', () => {
-    submitHighScorePrompt();
-  });
-}
-
-// Leaderboard UI wiring (inside Settings)
-const openLeaderboardBtn = document.getElementById('open-leaderboard-btn');
-const leaderboardPanel = document.getElementById('leaderboard-panel');
-const leaderboardList = document.getElementById('leaderboard-list');
-const leaderboardCloseBtn = document.getElementById('leaderboard-close-btn');
-
-async function showLeaderboard() {
-  if (!supabaseClient) initSupabase();
-  if (!supabaseClient) { alert('Supabase not configured.'); return; }
-  if (!leaderboardPanel || !leaderboardList) return;
-  leaderboardPanel.classList.remove('hidden');
-  leaderboardList.innerHTML = '<div style="text-align:center; color:#9aa8c6; padding:14px;">Loading</div>';
-  const rows = await fetchHighScores(20);
-  if (!rows || !rows.length) {
-    leaderboardList.innerHTML = '<div style="color:#cbd5e1; text-align:center; padding:12px;">No scores yet</div>';
-    return;
-  }
-  let html = '<table style="width:100%; border-collapse:collapse; color:#eaf2ff;">';
-  html += '<thead><tr style="text-align:left; color:#9fb6da;"><th>#</th><th>Name</th><th>Score</th><th>Wave</th></tr></thead><tbody>';
-  rows.forEach((r, idx) => {
-    const name = (r.name || '').slice(0,8);
-    html += `<tr style="border-top:1px solid rgba(255,255,255,0.03);"><td style="padding:6px 8px; width:28px;">${idx+1}</td><td style="padding:6px 8px;">${name}</td><td style="padding:6px 8px;">${r.score}</td><td style="padding:6px 8px;">${r.wave}</td></tr>`;
-  });
-  html += '</tbody></table>';
-  leaderboardList.innerHTML = html;
-}
-
-function closeLeaderboard() {
-  if (!leaderboardPanel) return;
-  leaderboardPanel.classList.add('hidden');
-}
-
-if (openLeaderboardBtn) openLeaderboardBtn.addEventListener('click', showLeaderboard);
-if (leaderboardCloseBtn) leaderboardCloseBtn.addEventListener('click', closeLeaderboard);
-
-// Populate the start-screen leaderboard (visible on start overlay)
-const startLeaderboardList = document.getElementById('start-leaderboard-list');
-async function populateStartLeaderboard(limit = 8) {
-  if (!startLeaderboardList) return;
-  startLeaderboardList.innerHTML = '<div style="text-align:center; color:#9aa8c6; padding:12px;">Loading...</div>';
-  if (!supabaseClient) initSupabase();
-  if (!supabaseClient) { startLeaderboardList.innerHTML = '<div style="text-align:center; color:#cbd5e1; padding:12px;">Supabase not configured</div>'; return; }
-  try {
-    const rows = await fetchHighScores(limit);
-    if (!rows || !rows.length) { startLeaderboardList.innerHTML = '<div style="text-align:center; color:#cbd5e1; padding:12px;">No scores yet</div>'; return; }
-    let html = '<ol style="padding-left:16px; margin:0;">';
-    rows.forEach(r => { const n = (r.name||'Player').slice(0,8); html += `<li style="padding:6px 0; list-style-position: inside;"><strong style="color:#bfdbfe">${n}</strong> — <span style="color:#e2e8f0">${r.score}</span> <small style="color:#9fb6da">(W:${r.wave})</small></li>`; });
-    html += '</ol>';
-    startLeaderboardList.innerHTML = html;
-  } catch (err) { console.warn('Start leaderboard error', err); startLeaderboardList.innerHTML = '<div style="text-align:center; color:#cbd5e1; padding:12px;">Failed to load</div>'; }
-}
-
-// Populate on load so start screen shows leaderboard
-try { populateStartLeaderboard(); } catch(e){}
-
 // Unlock overlay continue handler
 const unlockContinueBtn = document.getElementById('unlock-continue-btn');
 const unlockOverlayEl = document.getElementById('unlock-overlay');
@@ -2148,8 +1991,5 @@ requestAnimationFrame(loop);
 // Load persisted stats after script loads
 loadStats();
 </script>
-
-
-
 </body>
 </html>
