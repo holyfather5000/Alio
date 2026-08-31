@@ -295,7 +295,7 @@
     <div class="hud-item">LIVES: <b id="lives">3</b></div>
     <div class="hud-item" style="padding:4px 8px;">
       <button id="top-settings-btn" class="hud-btn" title="Settings" aria-label="Settings" style="padding:6px; display:flex; align-items:center; justify-content:center;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7zm8.94-2.5a1 1 0 0 0-.08-.36l-1.1-2.03a1 1 0 0 0-.87-.52l-2.2-.18a6.97 6.97 0 0 0-1.1-1.9l.9-2.03a1 1 0 0 0-.12-1.05l-1.5-1.5a1 1 0 0 0-1.05-.12L12.9 3.7a6.97 6.97 0 0 0-1.9-1.1l-.18-2.2a1 1 0 0 0-.52-.87L7.1 0.1A1 1 0 0 0 6.74 0h-1.48A1 1 0 0 0 4.3.4L2.3 2.9a1 1 0 0 0-.12 1.05l.9 2.03a6.97 6.97 0 0 0-1.1 1.9l-2.2.18a1 1 0 0 0-.87.52L.14 13.14a1 1 0 0 0 0 .72l1.1 2.03c.13.25.38.42.67.45l2.2.18c.3.71.7 1.36 1.1 1.9l-.9 2.03a1 1 0 0 0 .12 1.05l1.5 1.5c.3.3.73.44 1.14.34l2.03-.9c.56.4 1.19.8 1.9 1.1l.18 2.2c.03.28.2.54.45.67l2.03 1.1a1 1 0 0 0 .72 0l2.03-1.1c.25-.13.42-.38.45-.67l.18-2.2c.71-.3 1.36-.7 1.9-1.1l2.03.9c.4.1.84-.04 1.14-.34l1.5-1.5a1 1 0 0 0 .12-1.05l-.9-2.03c.4-.56.8-1.19 1.1-1.9l2.2-.18c.29-.03.54-.2.67-.45l1.1-2.03c.13-.25.13-.56 0-.81z" fill="#cbd5e1"/></svg>
+        <img src="cog.png" alt="Settings" style="width:18px;height:18px;display:block;" />
       </button>
     </div>
     <button id="pause-btn" class="hud-btn">Pause (P)</button>
@@ -357,9 +357,7 @@
 
   <!-- Mobile on-screen control bar (Settings icon only) -->
   <div id="mobile-controls" class="mobile-controls" aria-hidden="true">
-    <button id="mobile-settings-btn" class="m-btn" aria-label="Settings" title="Settings" style="padding:8px;">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7zm8.94-2.5a1 1 0 0 0-.08-.36l-1.1-2.03a1 1 0 0 0-.87-.52l-2.2-.18a6.97 6.97 0 0 0-1.1-1.9l.9-2.03a1 1 0 0 0-.12-1.05l-1.5-1.5a1 1 0 0 0-1.05-.12L12.9 3.7a6.97 6.97 0 0 0-1.9-1.1l-.18-2.2a1 1 0 0 0-.52-.87L7.1 0.1A1 1 0 0 0 6.74 0h-1.48A1 1 0 0 0 4.3.4L2.3 2.9a1 1 0 0 0-.12 1.05l.9 2.03a6.97 6.97 0 0 0-1.1 1.9l-2.2.18a1 1 0 0 0-.87.52L.14 13.14a1 1 0 0 0 0 .72l1.1 2.03c.13.25.38.42.67.45l2.2.18c.3.71.7 1.36 1.1 1.9l-.9 2.03a1 1 0 0 0 .12 1.05l1.5 1.5c.3.3.73.44 1.14.34l2.03-.9c.56.4 1.19.8 1.9 1.1l.18 2.2c.03.28.2.54.45.67l2.03 1.1a1 1 0 0 0 .72 0l2.03-1.1c.25-.13.42-.38.45-.67l.18-2.2c.71-.3 1.36-.7 1.9-1.1l2.03.9c.4.1.84-.04 1.14-.34l1.5-1.5a1 1 0 0 0 .12-1.05l-.9-2.03c.4-.56.8-1.19 1.1-1.9l2.2-.18c.29-.03.54-.2.67-.45l1.1-2.03c.13-.25.13-.56 0-.81z" fill="#cbd5e1"/></svg>
-    </button>
+     <!-- Mobile on-screen control bar removed (use top cog for settings) -->
   </div>
 
   <!-- Mobile version badge (visible on touch devices) -->
@@ -373,7 +371,7 @@
         <label style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><input id="setting-sound" type="checkbox" checked> Enable Sound</label>
         <label style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><input id="setting-touch-fire" type="checkbox" checked> Tap to Fire</label>
       </div>
-      <div style="display:flex; gap:10px; justify-content:center;">
+      <div class="settings-actions" style="display:flex; gap:10px; justify-content:center;">
         <button id="settings-pause-btn" class="play-btn">Pause</button>
         <button id="settings-restart-btn" class="play-btn">Restart</button>
         <button id="settings-close-btn" class="play-btn">Close</button>
@@ -601,6 +599,15 @@ function loadStats() {
     if (raw) {
       const parsed = JSON.parse(raw);
       stats = Object.assign(stats, parsed || {});
+    }
+
+    /* Settings overlay mobile adjustments */
+    @media (max-width: 640px) {
+      .overlay-screen .menu-box { width: 92% !important; padding: 12px !important; }
+      .overlay-screen .menu-box .settings-actions { flex-direction: column; gap:8px; align-items: stretch; }
+      .overlay-screen .menu-box .settings-actions .play-btn { width: 100%; padding: 10px 12px; font-size: 16px; }
+      .overlay-screen .menu-box .menu-row { flex-direction: column; align-items: stretch; gap:8px; }
+      .overlay-screen .menu-box label { width: 100%; }
     }
   } catch (err) { /* ignore parse errors */ }
   updateStatsUI();
@@ -1879,7 +1886,6 @@ if (finalStartBtn) {
 }
 
 // Mobile control wiring
-const mobileSettingsBtn = document.getElementById('mobile-settings-btn');
 const mobileSlider = document.getElementById('mobile-slider');
 const mobileFireBtn = document.getElementById('mobile-fire');
 const settingsOverlayEl = document.getElementById('settings-overlay');
@@ -1891,21 +1897,7 @@ const settingsRestartBtn = document.getElementById('settings-restart-btn');
 
 // mobile restart button removed from controls; Restart remains in Settings overlay
 
-if (mobileSettingsBtn) {
-  mobileSettingsBtn.addEventListener('click', () => {
-    if (!settingsOverlayEl) return;
-    // open settings and pause the game
-    prevPaused = isPaused;
-    isPaused = true;
-    pauseBtn.textContent = "Resume (P)";
-    const mpBtn = document.getElementById('mobile-pause-btn'); if (mpBtn) mpBtn.textContent = 'Resume';
-    settingsOverlayEl.classList.remove('hidden');
-    // reflect current settings
-    if (settingSound) settingSound.checked = !!soundEnabled;
-    if (settingTouchFire) settingTouchFire.checked = !!touchFireEnabled;
-    if (settingsPauseBtn) settingsPauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
-  });
-}
+// bottom mobile settings removed; top cog opens settings instead
 
 // Top settings cog opens the same overlay
 const topSettingsBtn = document.getElementById('top-settings-btn');
@@ -1921,6 +1913,12 @@ if (topSettingsBtn) {
     if (settingsPauseBtn) settingsPauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
   });
 }
+
+// Ensure there are no lingering references to removed mobile settings button
+try {
+  const maybeMobileSettings = document.getElementById('mobile-settings-btn');
+  if (maybeMobileSettings) maybeMobileSettings.remove();
+} catch (e) { }
 
 // Wire new mobile slider and fire controls
 if (mobileSlider) {
