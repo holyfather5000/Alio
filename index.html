@@ -279,27 +279,47 @@
   #mobile-controller input[type=range] { appearance:none; }
   /* Mobile fire button: keep perfect circular shape regardless of flex sizing */
   #mobile-controller .fire-btn {
-    width: 60px;
-    aspect-ratio: 1 / 1;
-    height: auto;
-    min-height: 60px;
-    border-radius: 50%;
-    padding: 0;
-    box-sizing: border-box;
-    background: linear-gradient(180deg, #b92f2f 0%, #d10000 100%);
-    border: 2px solid rgba(255, 40, 40, 0.35);
-    box-shadow: 0 6px 18px rgba(255,40,40,0.25);
-    color: #fff;
-    font-weight: 900;
-    font-size: 0px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 auto;
-    line-height: 1;
-    overflow: hidden;
-    opacity: 0.95;
-  }
+  width: 64px;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  min-height: 64px;
+  border-radius: 50%;
+  padding: 0;
+  box-sizing: border-box;
+  
+  /* Modern glassmorphism look with a vibrant center */
+  background: radial-gradient(circle at center, rgba(255, 46, 46, 0.85) 0%, rgba(20, 20, 25, 0.6) 100%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  
+  /* Sleek, thin high-contrast border ring */
+  border: 1px solid rgba(255, 77, 77, 0.5);
+  
+  /* Combined crisp drop shadow and a subtle neon inner glow */
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    inset 0 0 12px rgba(255, 46, 46, 0.4);
+  
+  /* Layout and positioning */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  overflow: hidden;
+  
+  /* Smooth micro-interaction transition */
+  transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), filter 0.12s ease;
+  cursor: pointer;
+}
+
+/* Modern tactile feedback when tapped */
+#mobile-controller .fire-btn:active {
+  transform: scale(0.92);
+  filter: brightness(1.2);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    inset 0 0 18px rgba(255, 46, 46, 0.7);
+}
   @media (max-width:640px) { #mobile-controller { display:block; } }
 
   /* slider hint overlay */
