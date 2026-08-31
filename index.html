@@ -278,6 +278,15 @@
   #mobile-controller .fire-btn { width:70px; height:70px; border-radius:50%; background:linear-gradient(180deg,#ff9b9b 0%, #ff6b6b 100%); border:2px solid rgba(255,80,80,0.08); box-shadow:0 6px 18px rgba(209,16,16,0.18); color:#fff; font-weight:900; font-size:16px; display:flex; align-items:center; justify-content:center; }
   @media (max-width:640px) { #mobile-controller { display:block; } }
 
+  /* Settings overlay mobile adjustments */
+  @media (max-width: 640px) {
+    .overlay-screen .menu-box { width: 92% !important; padding: 12px !important; }
+    .overlay-screen .menu-box .settings-actions { flex-direction: column; gap:8px; align-items: stretch; }
+    .overlay-screen .menu-box .settings-actions .play-btn { width: 100%; padding: 10px 12px; font-size: 16px; }
+    .overlay-screen .menu-box .menu-row { flex-direction: column; align-items: stretch; gap:8px; }
+    .overlay-screen .menu-box label { width: 100%; }
+  }
+
   /* Desktop: hide mobile-only control text */
   .controls-card-mobile { display: none; }
   @media (max-width: 640px) {
@@ -601,14 +610,7 @@ function loadStats() {
       stats = Object.assign(stats, parsed || {});
     }
 
-    /* Settings overlay mobile adjustments */
-    @media (max-width: 640px) {
-      .overlay-screen .menu-box { width: 92% !important; padding: 12px !important; }
-      .overlay-screen .menu-box .settings-actions { flex-direction: column; gap:8px; align-items: stretch; }
-      .overlay-screen .menu-box .settings-actions .play-btn { width: 100%; padding: 10px 12px; font-size: 16px; }
-      .overlay-screen .menu-box .menu-row { flex-direction: column; align-items: stretch; gap:8px; }
-      .overlay-screen .menu-box label { width: 100%; }
-    }
+    // Settings overlay mobile adjustments moved to CSS block
   } catch (err) { /* ignore parse errors */ }
   updateStatsUI();
 }
