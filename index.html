@@ -281,7 +281,7 @@
 
   /* slider hint overlay */
   #mobile-controller { position:relative; }
-  #mobile-slider-hint { position:absolute; left:12px; right:86px; top:50%; transform:translateY(-60%); pointer-events:none; color:#ffffff; opacity:0.75; font-size:60px; display:flex; justify-content:center; align-items:center; }
+  #mobile-slider-hint { position:absolute; left:12px; right:86px; top:50%; transform:translateY(-60%); pointer-events:none; color:#ffffff; opacity:0.75; font-size:30px; display:flex; font-weight: bold;justify-content:center; align-items:center; }
 
   /* Settings overlay mobile adjustments */
   @media (max-width: 640px) {
@@ -322,7 +322,7 @@
     <div class="ctrl-row">
       <div style="position:relative; width:100%;">
         <input id="mobile-slider" type="range" min="0" max="100" value="50" style="width:100%;" />
-        <div id="mobile-slider-hint">⟵ ⟶</div>
+        <div id="mobile-slider-hint"><img src="/arrows.png" width="90" /></div>
       </div>
       <button id="mobile-fire" class="fire-btn" aria-label="Fire" title="Fire"></button>
     </div>
