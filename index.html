@@ -64,8 +64,7 @@
   html.is-touch .controls-card { display: none !important; }
   html.is-touch .controls-card-mobile { display: block !important; }
   html.is-touch .hud-btn { font-size: 14px; }
-  .mobile-version { display:none; position:absolute; top:10px; right:12px; z-index:30; background: rgba(0,0,0,0.45); padding:6px 10px; border-radius:10px; font-weight:800; color:#dbeafe; border:1px solid rgba(99,102,241,0.08); font-size:13px; }
-  html.is-touch .mobile-version { display:block; }
+  .mobile-version { display:block; position:absolute; top:10px; right:12px; z-index:30; background: rgba(0,0,0,0.45); padding:6px 10px; border-radius:10px; font-weight:800; color:#dbeafe; border:1px solid rgba(99,102,241,0.08); font-size:13px; }
 
   /* Overlay HUD & Start Screen */
   .overlay-screen {
@@ -259,7 +258,7 @@
   }
 
   @media (max-width: 360px) {
-    .mobile-controls { bottom: calc(110px + env(safe-area-inset-bottom, 18px)); gap:6px; }
+    .mobile-controls { bottom: calc(140px + env(safe-area-inset-bottom, 18px)); gap:6px; }
     .mobile-controls .m-btn { padding: 6px 8px; font-size: 13px; border-radius: 10px; }
     .menu-box { padding: 14px; }
   }
@@ -338,6 +337,8 @@
 
   <!-- Mobile version badge (visible on touch devices) -->
   <div id="mobile-version" class="mobile-version">v.3</div>
+  <!-- Script status for debugging (visible) -->
+  <div id="script-status" style="position:fixed; left:10px; bottom:8px; z-index:60; background:rgba(0,0,0,0.45); color:#fff; padding:6px 8px; border-radius:8px; font-size:12px; font-weight:700;">script: not-init</div>
 
   <!-- Settings overlay (pauses game while open) -->
   <div id="settings-overlay" class="overlay-screen hidden">
@@ -373,6 +374,7 @@ if (isTouchDevice) {
   if (pauseBtn) pauseBtn.textContent = 'Pause';
   const mp = document.getElementById('mobile-pause-btn'); if (mp) mp.textContent = 'Pause';
 }
+try { const st = document.getElementById('script-status'); if (st) st.textContent = 'script: touch=' + (isTouchDevice? 'yes':'no'); } catch(e) {}
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
@@ -382,6 +384,8 @@ const livesEl = document.getElementById("lives");
 const pauseBtn = document.getElementById("pause-btn");
 const playBtn = document.getElementById("play-btn");
 const startOverlay = document.getElementById("start-overlay");
+// indicate script running early
+try { const st = document.getElementById('script-status'); if (st) st.textContent = 'script: init'; } catch (e) {}
 
 const W = canvas.width;
 const H = canvas.height;
@@ -1770,7 +1774,7 @@ playBtn.addEventListener('pointerdown', (e) => {
   startGame();
 });
 // Also handle touchend for older Safari
-playBtn.addEventListener('touchend', (e) => { e.preventDefault(); startGame(); }, { passive: false });
+playBtn.addEventListener('touchend', (e) => { e.preventDefault(); startGame(); try{ const st = document.getElementById('script-status'); if (st) st.textContent = 'script: start-pressed'; }catch(e){} }, { passive: false });
 if (playBtn) playBtn.style.touchAction = 'manipulation';
 
 // Improve responsiveness for mobile control buttons
