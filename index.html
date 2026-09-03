@@ -598,10 +598,6 @@ console.log('[AudioDebug] audioCtx.resume() REJECTED:', err);
 initMusicSystem();
 const now = audioCtx.currentTime;
 if (currentTrack === targetTrackKey) {
-// Same track already selected — but the very first attempt to play it may
-// have been silently blocked by the browser's autoplay policy (this happens
-// on page load, before any user gesture). If that track's audio element is
-// still paused, retry playing it now instead of doing nothing.
 const node = trackNodes[targetTrackKey];
 if (node && node.audio.paused) {
 node.audio.play().then(() => {
@@ -868,7 +864,9 @@ if (isBossWave) {
 const bossTier = wave / 5;
 let hp = 10 + bossTier * 8;
 if (bossTier === 6) hp = hp * 2;
-const size = Math.min(80, 50 + bossTier * 5) * mobileEnemyScale;
+// Adjust size: Final Boss (tier 6) is smaller than standard bosses
+const baseBossSize = (bossTier === 6) ? 55 : Math.min(80, 55 + bossTier * 5);
+const size = baseBossSize * mobileEnemyScale;
 enemies.push({
 x: W / 2,
 y: 140,
@@ -887,7 +885,8 @@ phase: 0,
 dive: false,
 diveT: 0,
 diveDir: 1,
-hitTimer: 0
+hitTimer: 0,
+heartsSpawned: 0
 });
 if (bossTier === 2) {
 enemies.push({
@@ -965,7 +964,7 @@ const y = 105 + row * 62;
 const isMini = miniBossIndexes.includes(i);
 const isPurple = (!isMini && wave > 4 && Math.random() < 0.10);
 const hp = isMini ? 3 : (isPurple ? 2 : 1);
-const baseSize = isMini ? 38 : 28;
+const baseSize = isMini ? 38 : 32;
 enemies.push({
 id: nextEnemyId++,
 x: x,
@@ -1031,8 +1030,10 @@ function shootEnemy(enemy) {
 if (!enemy.alive) return;
 const bulletSpeed = 200 + wave * 10;
 if (enemy.boss) {
-const isHeartShot = Math.random() < 0.05;
+const canSpawnHeart = (enemy.heartsSpawned || 0) < 5;
+const isHeartShot = canSpawnHeart && (Math.random() < 0.05);
 if (isHeartShot) {
+enemy.heartsSpawned = (enemy.heartsSpawned || 0) + 1;
 enemyBullets.push({
 x: enemy.x,
 y: enemy.y + enemy.size / 2,
@@ -1199,14 +1200,14 @@ e.y = 130 + Math.cos(performance.now() / 1000) * 15;
 e.diveT += dt;
 e.x += e.diveDir * (70 + wave * 5) * dt;
 e.y += (90 + wave * 6) * dt;
-if (e.diveT > 3.0 || e.y > H + 60) {
+if (e.diveT > 3.0 || e.y > H + 60 || e.x < -60 || e.x > W + 60) {
 e.dive = false;
 e.diveT = 0;
 e.returning = true;
 e.returnT = 0;
 e.targetX = e.baseX;
 e.targetY = 100 + e.row * 58;
-if (e.y > H + 60) {
+if (e.y > H + 60 || e.x < -60 || e.x > W + 60) {
 e.returnStartX = e.baseX + (Math.random() - 0.5) * 80;
 e.returnStartY = -40 - Math.random() * 80;
 e.returnDuration = 3.4;
@@ -1485,51 +1486,210 @@ ctx.stroke();
 }
 ctx.restore();
 }
+
+// --- NEW CUSTOM DRAWINGS FOR BAD GUY CHARACTERS ---
 function drawEnemy(e) {
 ctx.save();
 ctx.translate(e.x, e.y);
-const size = e.size;
+const s = e.size;
+
+// Theme color determination based on state and drawing labels
+let baseFill = "#3f687e";
+let strokeFill = "#7fb4c9";
+let coreFill = "#5c91a7";
+
 if (e.hitTimer > 0) {
-ctx.fillStyle = "#ff0000";
-ctx.strokeStyle = "#ffffff";
-ctx.lineWidth = 3;
+baseFill = "#ff3333";
+strokeFill = "#ffffff";
+coreFill = "#ffffaa";
 } else if (e.boss) {
-ctx.fillStyle = "#a82e5f";
-ctx.strokeStyle = "#ff69b4";
-ctx.lineWidth = 4;
-} else if (e.miniBoss) {
-ctx.fillStyle = "#8a3ab9";
-ctx.strokeStyle = "#d62976";
-ctx.lineWidth = 3;
-} else {
-if (e.fastShooter) {
-ctx.fillStyle = "#2f7f45";
-ctx.strokeStyle = "#8fe6a1";
-ctx.lineWidth = 2;
-} else if (e.purple) {
-ctx.fillStyle = "#6b2fb7";
-ctx.strokeStyle = "#d99bff";
+if (e.bossTier === 6) { // Final Boss
+baseFill = "#d93838";
+strokeFill = "#ff9999";
+coreFill = "#ffea79";
+} else { // Standard Boss
+baseFill = "#a82e5f";
+strokeFill = "#ff69b4";
+coreFill = "#ffd36b";
+}
+} else if (e.miniBoss) { // Green enemy variant or mini-boss
+baseFill = "#2e9354";
+strokeFill = "#78f0a6";
+coreFill = "#a3ffca";
+} else if (e.purple) { // Purple drawing variant
+baseFill = "#7b3fa8";
+strokeFill = "#d499ff";
+coreFill = "#e6c2ff";
+} else if (e.fastShooter) { // Orange drawing variant
+baseFill = "#d97724";
+strokeFill = "#ffbc75";
+coreFill = "#ffe3a3";
+}
+
+ctx.fillStyle = baseFill;
+ctx.strokeStyle = strokeFill;
 ctx.lineWidth = 2.5;
+
+if (e.boss) {
+if (e.bossTier === 6) {
+// --- FINAL BOSS DRAWING ---
+// Top Crescent Horns
+ctx.beginPath();
+ctx.arc(0, -s * 0.1, s * 0.45, Math.PI * 1.1, Math.PI * 1.9);
+ctx.lineTo(0, -s * 0.1);
+ctx.closePath();
+ctx.fill();
+ctx.stroke();
+
+// Main Dome Body
+ctx.beginPath();
+ctx.arc(0, 0, s * 0.4, Math.PI, 0);
+ctx.closePath();
+ctx.fill();
+ctx.stroke();
+
+// Ring / Attachment Structure
+ctx.beginPath();
+ctx.ellipse(0, s * 0.2, s * 0.35, s * 0.15, 0, 0, Math.PI * 2);
+ctx.fill();
+ctx.stroke();
+
+// Center Core / Cockpit
+ctx.fillStyle = coreFill;
+ctx.beginPath();
+ctx.arc(0, -s * 0.1, s * 0.18, 0, Math.PI * 2);
+ctx.fill();
+
+// 3 Bottom Thrusters / Jets
+ctx.strokeStyle = strokeFill;
+ctx.beginPath();
+ctx.moveTo(-s * 0.2, s * 0.35); ctx.lineTo(-s * 0.3, s * 0.6);
+ctx.moveTo(0, s * 0.35); ctx.lineTo(0, s * 0.65);
+ctx.moveTo(s * 0.2, s * 0.35); ctx.lineTo(s * 0.3, s * 0.6);
+ctx.stroke();
+
 } else {
-ctx.fillStyle = "#3f687e";
-ctx.strokeStyle = "#7fb4c9";
-ctx.lineWidth = 2;
+// --- REGULAR BOSS DRAWING ---
+// Main Rectangular Body
+ctx.beginPath();
+ctx.rect(-s * 0.45, -s * 0.2, s * 0.9, s * 0.5);
+ctx.fill();
+ctx.stroke();
+
+// Top Curved Horn Antennae
+ctx.beginPath();
+ctx.moveTo(-s * 0.45, -s * 0.2);
+ctx.quadraticCurveTo(-s * 0.55, -s * 0.65, -s * 0.15, -s * 0.6);
+ctx.stroke();
+
+ctx.beginPath();
+ctx.moveTo(s * 0.45, -s * 0.2);
+ctx.quadraticCurveTo(s * 0.55, -s * 0.65, s * 0.15, -s * 0.6);
+ctx.stroke();
+
+// Bottom Landing Gear / Double Vertical Engines
+ctx.beginPath();
+ctx.moveTo(-s * 0.3, s * 0.3);
+ctx.lineTo(-s * 0.35, s * 0.65);
+ctx.lineTo(-s * 0.2, s * 0.3);
+ctx.fill();
+ctx.stroke();
+
+ctx.beginPath();
+ctx.moveTo(s * 0.3, s * 0.3);
+ctx.lineTo(s * 0.35, s * 0.65);
+ctx.lineTo(s * 0.2, s * 0.3);
+ctx.fill();
+ctx.stroke();
+
+// Glow Core
+ctx.fillStyle = coreFill;
+ctx.fillRect(-s * 0.25, -s * 0.05, s * 0.5, s * 0.2);
 }
+} else {
+// --- REGULAR BAD GUY SHAPES (O.G., Green, Orange, Purple) ---
+
+// Outer Shield / Primary Inverted Triangle Base Shape (O.G. Base)
+ctx.beginPath();
+ctx.moveTo(-s * 0.48, -s * 0.42);
+ctx.lineTo(s * 0.48, -s * 0.42);
+ctx.lineTo(0, s * 0.48);
+ctx.closePath();
+ctx.fill();
+
+// Inner Trap/Notch Cutout Shape
+ctx.beginPath();
+ctx.moveTo(-s * 0.28, -s * 0.25);
+ctx.lineTo(s * 0.28, -s * 0.25);
+ctx.lineTo(s * 0.18, s * 0.12);
+ctx.lineTo(-s * 0.18, s * 0.12);
+ctx.closePath();
+ctx.fillStyle = "#020c06"; // Match dark background
+ctx.fill();
+
+// Re-stroke outer frame
+ctx.stroke();
+
+// Variant Modifications based on Hand Drawing Labels
+if (e.miniBoss) { 
+// GREEN VARIANT: Downward sharp fins extending off bottom tips
+ctx.fillStyle = baseFill;
+ctx.beginPath();
+ctx.moveTo(-s * 0.35, s * 0.05);
+ctx.lineTo(-s * 0.45, s * 0.4);
+ctx.lineTo(-s * 0.22, s * 0.25);
+ctx.closePath();
+ctx.fill(); ctx.stroke();
+
+ctx.beginPath();
+ctx.moveTo(s * 0.35, s * 0.05);
+ctx.lineTo(s * 0.45, s * 0.4);
+ctx.lineTo(s * 0.22, s * 0.25);
+ctx.closePath();
+ctx.fill(); ctx.stroke();
+
+} else if (e.fastShooter) {
+// ORANGE VARIANT: Side Wing Guards / Feathered Extensions
+ctx.fillStyle = baseFill;
+ctx.beginPath();
+ctx.moveTo(-s * 0.32, -s * 0.1);
+ctx.lineTo(-s * 0.6, s * 0.05);
+ctx.lineTo(-s * 0.2, s * 0.25);
+ctx.closePath();
+ctx.fill(); ctx.stroke();
+
+ctx.beginPath();
+ctx.moveTo(s * 0.32, -s * 0.1);
+ctx.lineTo(s * 0.6, s * 0.05);
+ctx.lineTo(s * 0.2, s * 0.25);
+ctx.closePath();
+ctx.fill(); ctx.stroke();
+
+} else if (e.purple) {
+// PURPLE VARIANT: Pedestal / Shield Pod Core extending down
+ctx.fillStyle = baseFill;
+ctx.beginPath();
+ctx.arc(0, s * 0.18, s * 0.14, 0, Math.PI * 2);
+ctx.fill(); ctx.stroke();
 }
-ctx.fillRect(-size / 2, -size / 2, size, size);
-ctx.strokeRect(-size / 2, -size / 2, size, size);
-ctx.fillStyle = e.hitTimer > 0 ? "#ffffff" : (e.boss ? "#ffd36b" : (e.miniBoss ? "#ffaa00" : "#d5e6ef"));
-ctx.fillRect(-size * .18, -size * .18, size * .36, size * .36);
-ctx.fillStyle = e.hitTimer > 0 ? "#ff8888" : (e.boss ? "#ff527f" : (e.miniBoss ? "#ff2255" : "#5c91a7"));
-ctx.fillRect(-size * .34, size * .22, size * .68, 4);
+
+// Glowing Core Eye/Orb (Present on O.G. & Green drawings)
+ctx.fillStyle = coreFill;
+ctx.beginPath();
+ctx.arc(0, -s * 0.3, s * 0.08, 0, Math.PI * 2);
+ctx.fill();
+}
+
+// Draw Health Bar for damaged/boss units
 if (e.hp < e.maxHp || e.boss || e.miniBoss) {
 ctx.fillStyle = "#1b2030";
-ctx.fillRect(-size / 2, -size / 2 - 12, size, 6);
+ctx.fillRect(-s / 2, -s / 2 - 12, s, 6);
 ctx.fillStyle = e.boss ? "#ff3366" : (e.miniBoss ? "#ffaa00" : "#ffbf62");
-ctx.fillRect(-size / 2, -size / 2 - 12, size * (e.hp / e.maxHp), 6);
+ctx.fillRect(-s / 2, -s / 2 - 12, s * (e.hp / e.maxHp), 6);
 }
 ctx.restore();
 }
+
 function drawBullets() {
 for (const b of bullets) {
 ctx.save();
@@ -1930,7 +2090,7 @@ if (!settingsOverlayEl) return;
 settingsOverlayEl.classList.add('hidden');
 isPaused = !!prevPaused;
 pauseBtn.textContent = isPaused ? "Resume (P)" : "Pause (P)";
-const mpBtn = document.getElementById('mobile-pause-btn'); if (mpBtn) mpBtn.textContent = isPaused ? 'Resume' : 'Pause';
+const mpBtn = document.getElementById('mobile-pause-btn'); if (mpBtn) mpBtn.textContent = 'Pause';
 });
 }
 if (settingSoundRange) {
