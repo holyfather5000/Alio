@@ -555,10 +555,7 @@ let audioCtx = null;
 let musicVolume = 1.0;
 let currentTrack = null;
 const tracks = {
-title: new Audio('gp-titles.mp3'),
-gameplay: new Audio('gp-rach.mp3'),
-boss: new Audio('gp-boss.mp3'),
-bossFinal: new Audio('gp-boss-final.mp3')
+rampage: new Audio('rampage.mp3')
 };
 const trackNodes = {};
 function initAudio() {
@@ -581,6 +578,7 @@ trackNodes[key] = { audio, gainNode };
 });
 }
 function playMusicTrack(targetTrackKey, fadeDuration = 1.2) {
+targetTrackKey = 'rampage';
 if (!audioCtx) initAudio();
 console.log('[AudioDebug] playMusicTrack called for:', targetTrackKey, {
 audioCtxState: audioCtx.state,
@@ -852,14 +850,9 @@ const hs = document.getElementById('highscore'); if (hs) hs.textContent = stats.
 }
 function createWave() {
 enemies = [];
-const isBossWave = wave % 5 === 0;
-if (isBossWave) {
-const musicBossTier = wave / 5;
-playMusicTrack(musicBossTier === 6 ? 'bossFinal' : 'boss');
-} else {
-playMusicTrack('gameplay');
-}
+playMusicTrack('rampage');
 const mobileEnemyScale = isTouchDevice ? 1.18 : 1;
+const isBossWave = wave % 5 === 0;
 if (isBossWave) {
 const bossTier = wave / 5;
 let hp = 10 + bossTier * 8;
@@ -1162,7 +1155,7 @@ playSound('explosion');
 updateHUD();
 if (lives <= 0) {
 gameOver = true;
-playMusicTrack('title');
+playMusicTrack('rampage');
 finalizeStats(false);
 }
 }
@@ -1294,7 +1287,7 @@ fadeBulletsTimer = 0;
 } else if (wave >= 30) {
 showWinOverlay = true;
 gameOver = true;
-playMusicTrack('title');
+playMusicTrack('rampage');
 const winEl = document.getElementById('win-overlay'); if (winEl) winEl.classList.remove('hidden');
 spawnConfetti(160);
 } else {
@@ -1366,7 +1359,7 @@ laserUnlockShown = true;
 if (tier === 6) {
 showWinOverlay = true;
 gameOver = true;
-playMusicTrack('title');
+playMusicTrack('rampage');
 const winEl = document.getElementById('win-overlay'); if (winEl) winEl.classList.remove('hidden');
 spawnConfetti(160);
 finalizeStats(true);
@@ -2112,8 +2105,8 @@ trackNodes[currentTrack].gainNode.gain.setValueAtTime(musicVolume, now);
 }
 });
 }
-window.addEventListener('click', () => { playMusicTrack(currentTrack || 'title'); }, { once: true });
-window.addEventListener('touchstart', () => { playMusicTrack(currentTrack || 'title'); }, { once: true });
+window.addEventListener('click', () => { playMusicTrack('rampage'); }, { once: true });
+window.addEventListener('touchstart', () => { playMusicTrack('rampage'); }, { once: true });
 if (settingsRestartBtn) {
 settingsRestartBtn.addEventListener('click', () => {
 resetGame();
