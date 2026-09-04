@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -248,6 +249,32 @@ height: 24px;
 fill: currentColor;
 }
 
+/* Inline mute button (sits beside the settings icon on mobile/small screens) */
+.mute-toggle-inline {
+display: none;
+width: 30px;
+height: 30px;
+border-radius: 50%;
+background: rgba(10, 30, 21, 0.85);
+border: 2px solid rgba(96, 250, 155, 0.4);
+box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+color: #3bf66d;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+outline: none;
+pointer-events: auto;
+transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.mute-toggle-inline:active {
+transform: scale(0.92);
+}
+.mute-toggle-inline svg {
+width: 16px;
+height: 16px;
+fill: currentColor;
+}
+
 .mobile-controls {
 position: absolute;
 bottom: 38px;
@@ -284,7 +311,8 @@ body { padding: env(safe-area-inset-top, 2px) 2px 2px; }
 .hud-overlay { position: relative; top: auto; left: auto; transform: none; width: 98%; max-width: none; margin-bottom: 4px; pointer-events: none; }
 .hud-overlay #pause-btn { display: none; }
 .hud-overlay .hud-item { padding: 4px 8px; }
-.mute-toggle-btn { bottom: calc(12px + env(safe-area-inset-bottom, 0px)); right: 12px; width: 42px; height: 42px; }
+.mute-toggle-btn { display: none; }
+.mute-toggle-inline { display: flex; }
 }
 
 .mobile-controls {
@@ -431,9 +459,17 @@ gap: 4px 0;
 <div class="hud-itemz">SCORE<br><b id="score">0</b></div>
 <div class="hud-itemz">WAVE<br><b id="wave">1</b></div>
 <div class="hud-itemz">LIVES<br><b id="lives">3</b></div>
-<div class="hud-itemz" style="padding:4px 8px;">
+<div class="hud-itemz" style="padding:4px 8px; display:flex; align-items:center; gap:8px;">
 <button id="top-settings-btn" class="hud-btn" title="Settings" aria-label="Settings" style="padding:6px; display:flex; align-items:center; justify-content:center;">
 <img src="cog.png" alt="Settings" style="width:18px;height:18px;display:block;" />
+</button>
+<button id="mute-btn-inline" class="mute-toggle-inline" title="Toggle Mute" aria-label="Toggle Mute">
+<svg class="mute-icon-unmuted" viewBox="0 0 24 24">
+<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+</svg>
+<svg class="mute-icon-muted hidden" viewBox="0 0 24 24">
+<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+</svg>
 </button>
 </div>
 <button id="pause-btn" class="hud-btn">Pause</button>
@@ -561,6 +597,9 @@ const startOverlay = document.getElementById("start-overlay");
 const muteBtn = document.getElementById("mute-btn");
 const muteIconUnmuted = document.getElementById("mute-icon-unmuted");
 const muteIconMuted = document.getElementById("mute-icon-muted");
+const muteBtnInline = document.getElementById("mute-btn-inline");
+const muteIconUnmutedInline = muteBtnInline ? muteBtnInline.querySelector('.mute-icon-unmuted') : null;
+const muteIconMutedInline = muteBtnInline ? muteBtnInline.querySelector('.mute-icon-muted') : null;
 const W = canvas.width;
 const H = canvas.height;
 
@@ -600,7 +639,7 @@ let preMuteMusicVol = 0.5;
 let currentTrack = null;
 const tracks = {
 rampage: new Audio('rampage.mp3'),
-titles: new Audio('titles.mp3')
+bossFinal: new Audio('gp-boss-final.mp3')
 };
 const trackNodes = {};
 
@@ -668,11 +707,15 @@ masterVolume = 0;
 musicVolume = 0;
 if (muteIconUnmuted) muteIconUnmuted.classList.add('hidden');
 if (muteIconMuted) muteIconMuted.classList.remove('hidden');
+if (muteIconUnmutedInline) muteIconUnmutedInline.classList.add('hidden');
+if (muteIconMutedInline) muteIconMutedInline.classList.remove('hidden');
 } else {
 masterVolume = preMuteMasterVol > 0 ? preMuteMasterVol : 1.0;
 musicVolume = preMuteMusicVol > 0 ? preMuteMusicVol : 0.5;
 if (muteIconUnmuted) muteIconUnmuted.classList.remove('hidden');
 if (muteIconMuted) muteIconMuted.classList.add('hidden');
+if (muteIconUnmutedInline) muteIconUnmutedInline.classList.remove('hidden');
+if (muteIconMutedInline) muteIconMutedInline.classList.add('hidden');
 }
 const settingSound = document.getElementById('setting-sound-range');
 const settingMusic = document.getElementById('setting-music-range');
@@ -688,6 +731,9 @@ trackNodes[currentTrack].gainNode.gain.setValueAtTime(musicVolume, now);
 
 if (muteBtn) {
 muteBtn.addEventListener('click', toggleMute);
+}
+if (muteBtnInline) {
+muteBtnInline.addEventListener('click', toggleMute);
 }
 
 function playSound(type) {
@@ -923,14 +969,19 @@ const hs = document.getElementById('highscore'); if (hs) hs.textContent = stats.
 
 function createWave() {
 enemies = [];
-playMusicTrack('rampage');
-const mobileEnemyScale = isTouchDevice ? 1.18 : 1;
 const isBossWave = wave % 5 === 0;
+if (isBossWave && wave / 5 === 6) {
+playMusicTrack('bossFinal');
+} else {
+playMusicTrack('rampage');
+}
+const mobileEnemyScale = isTouchDevice ? 1.18 : 1;
 if (isBossWave) {
 const bossTier = wave / 5;
 let hp = 10 + bossTier * 8;
 if (bossTier === 6) hp = hp * 2;
-const baseBossSize = (bossTier === 6) ? 55 : Math.min(80, 55 + bossTier * 5);
+// Level 30 Final Boss size is set smaller than levels 5, 10, 15, 20, 25
+const baseBossSize = (bossTier === 6) ? 56 : Math.min(88, 64 + bossTier * 5);
 const size = baseBossSize * mobileEnemyScale;
 enemies.push({
 x: W / 2,
@@ -989,7 +1040,6 @@ maxHp: 3,
 alive: true,
 phase: Math.PI / 2,
 dive: false,
-diveT: 0,
 diveDir: -1,
 hitTimer: 0
 });
@@ -1028,7 +1078,7 @@ const y = 105 + row * 62;
 const isMini = miniBossIndexes.includes(i);
 const isPurple = (!isMini && wave > 4 && Math.random() < 0.10);
 const hp = isMini ? 3 : (isPurple ? 2 : 1);
-const baseSize = isMini ? 42 : 42; // O.G. enemy size increased from 32 to 38
+const baseSize = isMini ? 42 : 42;
 enemies.push({
 id: nextEnemyId++,
 x: x,
@@ -1094,7 +1144,6 @@ updateHUD();
 
 function shootEnemy(enemy) {
 if (!enemy.alive) return;
-// Rule check: Do not shoot while off screen
 if (enemy.y < 0 || enemy.x < 0 || enemy.x > W) return;
 
 const bulletSpeed = 200 + wave * 10;
@@ -1131,7 +1180,6 @@ enemyBullets.push({ x: enemy.x + offsetX, y: enemy.y + enemy.size / 2, vx: vx, v
 }
 }
 } else if (enemy.miniBoss) {
-// Green alien bullets
 enemyBullets.push({ x: enemy.x - 12, y: enemy.y + enemy.size / 2, vx: -20, vy: bulletSpeed, radius: 7 * (isTouchDevice ? 1.15 : 1), alpha: 1, isHeart: false, tint: 'mini', ownerId: enemy.id });
 enemyBullets.push({ x: enemy.x + 12, y: enemy.y + enemy.size / 2, vx: 20, vy: bulletSpeed, radius: 7 * (isTouchDevice ? 1.15 : 1), alpha: 1, isHeart: false, tint: 'mini', ownerId: enemy.id });
 } else {
@@ -1147,7 +1195,6 @@ playSound('enemy_laser');
 }
 
 function chooseShooter() {
-// Filter for enemies that are alive AND currently on screen
 const livingOnScreen = enemies.filter(e => e.alive && e.y >= 0 && e.x >= 0 && e.x <= W);
 if (!livingOnScreen.length) return;
 const fast = livingOnScreen.filter(e => e.fastShooter);
@@ -1241,7 +1288,7 @@ playSound('explosion');
 updateHUD();
 if (lives <= 0) {
 gameOver = true;
-playMusicTrack('titles');
+playMusicTrack('rampage');
 finalizeStats(false);
 }
 }
@@ -1278,7 +1325,6 @@ if (e.hitTimer > 0) e.hitTimer = Math.max(0, e.hitTimer - dt);
 if (e.boss) {
 e.x = e.baseX + Math.sin(performance.now() / 700) * (160 + wave * 3);
 if (e.bossTier === 6) {
-// Final Boss movement: occasionally swoops 50% down towards player
 const swoopCycle = Math.sin(performance.now() / 1500);
 const swoopOffset = Math.max(0, swoopCycle) * (H * 0.5 - 130);
 e.y = 130 + swoopOffset + Math.cos(performance.now() / 1000) * 15;
@@ -1298,7 +1344,7 @@ e.targetX = e.baseX;
 e.targetY = 100 + e.row * 58;
 e.returnStartX = e.x < 0 ? -20 : (e.x > W ? W + 20 : e.x);
 e.returnStartY = e.y > H ? -40 : e.y;
-e.returnDuration = 2.8; // Faster return speed
+e.returnDuration = 2.8;
 }
 } else {
 if (e.returning) {
@@ -1372,7 +1418,7 @@ fadeBulletsTimer = 0;
 } else if (wave >= 30) {
 showWinOverlay = true;
 gameOver = true;
-playMusicTrack('titles');
+playMusicTrack('rampage');
 const winEl = document.getElementById('win-overlay'); if (winEl) winEl.classList.remove('hidden');
 spawnConfetti(160);
 } else {
@@ -1445,7 +1491,7 @@ laserUnlockShown = true;
 if (tier === 6) {
 showWinOverlay = true;
 gameOver = true;
-playMusicTrack('titles');
+playMusicTrack('rampage');
 const winEl = document.getElementById('win-overlay'); if (winEl) winEl.classList.remove('hidden');
 spawnConfetti(160);
 finalizeStats(true);
@@ -1613,94 +1659,124 @@ ctx.lineWidth = 2.5;
 
 if (e.boss) {
 if (e.bossTier === 6) {
+// FINAL BOSS: Advanced sleek O.G. ship variant (smaller than major bosses, larger than standard enemies)
 ctx.beginPath();
-ctx.arc(0, -s * 0.1, s * 0.45, Math.PI * 1.1, Math.PI * 1.9);
-ctx.lineTo(0, -s * 0.1);
+ctx.moveTo(-s * 0.45, -s * 0.40);
+ctx.lineTo(s * 0.45, -s * 0.40);
+ctx.lineTo(s * 0.18, s * 0.18);
+ctx.lineTo(0, s * 0.48);
+ctx.lineTo(-s * 0.18, s * 0.18);
 ctx.closePath();
 ctx.fill();
 ctx.stroke();
 
+// Inner armored hull plate
 ctx.beginPath();
-ctx.arc(0, 0, s * 0.4, Math.PI, 0);
+ctx.moveTo(-s * 0.28, -s * 0.25);
+ctx.lineTo(s * 0.28, -s * 0.25);
+ctx.lineTo(s * 0.12, s * 0.15);
+ctx.lineTo(-s * 0.12, s * 0.15);
+ctx.closePath();
+ctx.fillStyle = "#0a0a18";
+ctx.fill();
+ctx.stroke();
+
+// Advanced side wings & energy pods
+ctx.beginPath();
+ctx.moveTo(-s * 0.35, -s * 0.2);
+ctx.lineTo(-s * 0.62, -s * 0.05);
+ctx.lineTo(-s * 0.45, s * 0.32);
+ctx.lineTo(-s * 0.22, s * 0.2);
+ctx.closePath();
+ctx.fillStyle = baseFill;
+ctx.fill();
+ctx.stroke();
+
+ctx.beginPath();
+ctx.moveTo(s * 0.35, -s * 0.2);
+ctx.lineTo(s * 0.62, -s * 0.05);
+ctx.lineTo(s * 0.45, s * 0.32);
+ctx.lineTo(s * 0.22, s * 0.2);
 ctx.closePath();
 ctx.fill();
 ctx.stroke();
 
+// Dual stabilization rear fins
 ctx.beginPath();
-ctx.ellipse(0, s * 0.2, s * 0.35, s * 0.15, 0, 0, Math.PI * 2);
+ctx.moveTo(-s * 0.12, -s * 0.4); ctx.lineTo(-s * 0.22, -s * 0.58); ctx.lineTo(-s * 0.04, -s * 0.42);
+ctx.moveTo(s * 0.12, -s * 0.4); ctx.lineTo(s * 0.22, -s * 0.58); ctx.lineTo(s * 0.04, -s * 0.42);
+ctx.fillStyle = strokeFill;
 ctx.fill();
-ctx.stroke();
 
+// Glowing Command Core
 ctx.fillStyle = coreFill;
 ctx.beginPath();
-ctx.arc(0, -s * 0.1, s * 0.18, 0, Math.PI * 2);
+ctx.arc(0, -s * 0.1, s * 0.14, 0, Math.PI * 2);
 ctx.fill();
-
-ctx.strokeStyle = strokeFill;
-ctx.beginPath();
-ctx.moveTo(-s * 0.2, s * 0.35); ctx.lineTo(-s * 0.3, s * 0.6);
-ctx.moveTo(0, s * 0.35); ctx.lineTo(0, s * 0.65);
-ctx.moveTo(s * 0.2, s * 0.35); ctx.lineTo(s * 0.3, s * 0.6);
-ctx.stroke();
 } else {
-// REDESIGNED ADVANCED REGULAR BOSS SPACESHIP
-// Main central fuselage
+// REGULAR BOSSES (Levels 5, 10, 15, 20, 25): Heavy, scaled-up advanced O.G. flagship
 ctx.beginPath();
-ctx.moveTo(0, -s * 0.55);
-ctx.lineTo(s * 0.18, -s * 0.2);
-ctx.lineTo(s * 0.22, s * 0.25);
-ctx.lineTo(s * 0.1, s * 0.48);
-ctx.lineTo(-s * 0.1, s * 0.48);
-ctx.lineTo(-s * 0.22, s * 0.25);
-ctx.lineTo(-s * 0.18, -s * 0.2);
+ctx.moveTo(-s * 0.5, -s * 0.44);
+ctx.lineTo(s * 0.5, -s * 0.44);
+ctx.lineTo(s * 0.2, s * 0.18);
+ctx.lineTo(0, s * 0.52);
+ctx.lineTo(-s * 0.2, s * 0.18);
 ctx.closePath();
 ctx.fill();
 ctx.stroke();
 
-// Advanced swept-forward outer wings
+// Command deck inner cavity
 ctx.beginPath();
-ctx.moveTo(-s * 0.18, -s * 0.1);
-ctx.lineTo(-s * 0.6, s * 0.15);
-ctx.lineTo(-s * 0.52, s * 0.38);
-ctx.lineTo(-s * 0.2, s * 0.2);
+ctx.moveTo(-s * 0.3, -s * 0.28);
+ctx.lineTo(s * 0.3, -s * 0.28);
+ctx.lineTo(s * 0.15, s * 0.12);
+ctx.lineTo(-s * 0.15, s * 0.12);
 ctx.closePath();
+ctx.fillStyle = "#020c06";
+ctx.fill();
+ctx.stroke();
+
+// Advanced side wing extension array
+ctx.beginPath();
+ctx.moveTo(-s * 0.32, -s * 0.1);
+ctx.lineTo(-s * 0.68, s * 0.08);
+ctx.lineTo(-s * 0.52, s * 0.42);
+ctx.lineTo(-s * 0.2, s * 0.28);
+ctx.closePath();
+ctx.fillStyle = baseFill;
 ctx.fill();
 ctx.stroke();
 
 ctx.beginPath();
-ctx.moveTo(s * 0.18, -s * 0.1);
-ctx.lineTo(s * 0.6, s * 0.15);
-ctx.lineTo(s * 0.52, s * 0.38);
-ctx.lineTo(s * 0.2, s * 0.2);
+ctx.moveTo(s * 0.32, -s * 0.1);
+ctx.lineTo(s * 0.68, s * 0.08);
+ctx.lineTo(s * 0.52, s * 0.42);
+ctx.lineTo(s * 0.2, s * 0.28);
 ctx.closePath();
 ctx.fill();
 ctx.stroke();
 
-// Dual energy cannons
-ctx.beginPath();
-ctx.rect(-s * 0.58, s * 0.1, s * 0.05, s * 0.35);
-ctx.rect(s * 0.53, s * 0.1, s * 0.05, s * 0.35);
+// Quad front cannon tips
 ctx.fillStyle = strokeFill;
+ctx.beginPath();
+ctx.rect(-s * 0.65, s * 0.08, s * 0.06, s * 0.32);
+ctx.rect(-s * 0.48, s * 0.35, s * 0.06, s * 0.22);
+ctx.rect(s * 0.59, s * 0.08, s * 0.06, s * 0.32);
+ctx.rect(s * 0.42, s * 0.35, s * 0.06, s * 0.22);
 ctx.fill();
 
-// Cockpits & glowing core element
+// Core power matrix
 ctx.fillStyle = coreFill;
 ctx.beginPath();
-ctx.ellipse(0, -s * 0.15, s * 0.09, s * 0.2, 0, 0, Math.PI * 2);
+ctx.arc(0, -s * 0.25, s * 0.1, 0, Math.PI * 2);
 ctx.fill();
 ctx.beginPath();
-ctx.arc(-s * 0.35, s * 0.15, s * 0.06, 0, Math.PI * 2);
-ctx.arc(s * 0.35, s * 0.15, s * 0.06, 0, Math.PI * 2);
-ctx.fill();
-
-// Thruster flame trails
-ctx.fillStyle = strokeFill;
-ctx.beginPath();
-ctx.moveTo(-s * 0.12, s * 0.48); ctx.lineTo(-s * 0.06, s * 0.62); ctx.lineTo(0, s * 0.48);
-ctx.moveTo(0, s * 0.48); ctx.lineTo(s * 0.06, s * 0.62); ctx.lineTo(s * 0.12, s * 0.48);
+ctx.arc(-s * 0.22, -s * 0.08, s * 0.06, 0, Math.PI * 2);
+ctx.arc(s * 0.22, -s * 0.08, s * 0.06, 0, Math.PI * 2);
 ctx.fill();
 }
 } else {
+// Standard Regular O.G. Enemy Ships
 ctx.beginPath();
 ctx.moveTo(-s * 0.48, -s * 0.42);
 ctx.lineTo(s * 0.48, -s * 0.42);
@@ -1811,7 +1887,6 @@ ctx.bezierCurveTo(b.x + r, b.y - r * 0.5, b.x, b.y - r * 0.5, b.x, b.y + r * 0.4
 ctx.fill();
 } else {
 if (b.tint === 'mini') {
-// Modified green enemy bullet tint to orange-red
 ctx.strokeStyle = "rgba(255, 80, 20, 0.6)";
 ctx.shadowBlur = 14;
 ctx.shadowColor = "#ff4500";
@@ -2179,7 +2254,7 @@ if (masterVolume > 0 && !audioCtx) initAudio();
 }
 
 if (settingMusicRange) {
-settingMusicRange.value = 50; // Initialized to 50%
+settingMusicRange.value = 50;
 settingMusicRange.addEventListener('input', (e) => {
 musicVolume = Number(e.target.value) / 100;
 if (currentTrack && trackNodes[currentTrack]) {
@@ -2191,8 +2266,8 @@ trackNodes[currentTrack].gainNode.gain.setValueAtTime(musicVolume, now);
 });
 }
 
-window.addEventListener('click', () => { playMusicTrack('titles'); }, { once: true });
-window.addEventListener('touchstart', () => { playMusicTrack('titles'); }, { once: true });
+window.addEventListener('click', () => { playMusicTrack('rampage'); }, { once: true });
+window.addEventListener('touchstart', () => { playMusicTrack('rampage'); }, { once: true });
 
 if (settingsRestartBtn) {
 settingsRestartBtn.addEventListener('click', () => {
@@ -2203,6 +2278,7 @@ if (settingsOverlayEl) settingsOverlayEl.classList.add('hidden');
 
 requestAnimationFrame(loop);
 loadStats();
+
 </script>
 </body>
 </html>
