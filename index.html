@@ -37,9 +37,6 @@ display: block;
 background: #020c06;
 box-shadow: 0 0 35px rgba(0, 255, 136, 0.25);
 border: 1px solid #1f3d31;
-}
-/* Only disable touch-action on the canvas; allow buttons to receive click/tap normally */
-canvas {
 -webkit-tap-highlight-color: transparent;
 -webkit-touch-callout: none;
 -webkit-user-select: none;
@@ -47,10 +44,9 @@ user-select: none;
 touch-action: none;
 }
 .viewport-container {
-/* allow normal pointer behavior for overlays/buttons inside */
 touch-action: auto;
 }
-/* Buttons: don't block pointer events; use manipulation to allow clicks while preventing double-tap zoom */
+/* Buttons */
 .play-btn, .m-btn, .hud-btn {
 -webkit-tap-highlight-color: transparent;
 -webkit-user-select: none;
@@ -58,11 +54,11 @@ user-select: none;
 touch-action: manipulation;
 -webkit-touch-callout: none;
 }
-/* When JS marks the document as touch, prefer mobile controls card */
+/* Touch adaptations */
 html.is-touch .controls-card { display: none !important; }
 html.is-touch .controls-card-mobile { display: block !important; }
 html.is-touch .hud-btn { font-size: 14px; }
-/* Overlay HUD & Start Screen */
+
 .overlay-screen {
 position: absolute;
 top: 0; left: 0; width: 100%; height: 100%;
@@ -75,7 +71,6 @@ backdrop-filter: blur(8px);
 z-index: 10;
 transition: opacity 0.3s ease;
 }
-/* Make the win overlay mostly transparent so canvas confetti and Earth show through */
 #win-overlay {
 background: rgba(3, 15, 3, 0);
 backdrop-filter: blur(2px);
@@ -168,6 +163,7 @@ line-height: 1.6;
 .controls-card b {
 color: #e2f0e4;
 }
+
 /* HUD Header */
 .hud-overlay {
 position: absolute;
@@ -218,7 +214,40 @@ border-radius: 20px;
 cursor: pointer;
 }
 .hud-btn:hover { background: #33553f; }
-/* Mobile on-screen controls (shown at small widths) */
+
+/* Bottom Right Mute Button */
+.mute-toggle-btn {
+position: fixed;
+bottom: 16px;
+right: 16px;
+z-index: 100;
+width: 48px;
+height: 48px;
+border-radius: 50%;
+background: rgba(10, 30, 21, 0.85);
+border: 2px solid rgba(96, 250, 155, 0.4);
+box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+color: #3bf66d;
+display: flex;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+outline: none;
+transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.mute-toggle-btn:hover {
+transform: scale(1.08);
+border-color: rgba(96, 250, 155, 0.8);
+}
+.mute-toggle-btn:active {
+transform: scale(0.92);
+}
+.mute-toggle-btn svg {
+width: 24px;
+height: 24px;
+fill: currentColor;
+}
+
 .mobile-controls {
 position: absolute;
 bottom: 38px;
@@ -241,48 +270,45 @@ box-shadow: 0 6px 20px rgba(2, 23, 12, 0.6);
 cursor: pointer;
 }
 .mobile-controls .m-btn:active { transform: scale(0.98); }
-/* Mobile / small-screen tweaks */
+
 @media (max-width: 640px) {
 .menu-box { padding: 24px; max-width: 96%; }
 h1.title { font-size: 28px; letter-spacing: 3px; }
 .subtitle { font-size: 12px; }
 .play-btn { padding: 14px 28px; font-size: 18px; }
 .controls-card { font-size: 15px; padding: 12px; }
-.hud-overlay { top: 10px; font-size: 13px; width: 96%; }
+.hud-overlay { top: 6px; font-size: 12px; width: 98%; }
 canvas { border-radius: 10px; box-shadow: 0 0 20px rgba(0, 140, 63, 0.22); }
-body { padding: calc(env(safe-area-inset-top, 10px) + 10px) 10px 10px; }
-/* show mobile controls on small screens */
+body { padding: env(safe-area-inset-top, 2px) 2px 2px; }
 .mobile-controls { display: flex; }
-/* make HUD less intrusive for touch */
-/* Move HUD into document flow on mobile so it's not under URL bar */
-.hud-overlay { position: relative; top: auto; left: auto; transform: none; width: 98%; max-width: none; margin-bottom: 8px; pointer-events: none; }
+.hud-overlay { position: relative; top: auto; left: auto; transform: none; width: 98%; max-width: none; margin-bottom: 4px; pointer-events: none; }
 .hud-overlay #pause-btn { display: none; }
-.hud-overlay .hud-item { padding: 6px 10px; }
+.hud-overlay .hud-item { padding: 4px 8px; }
+.mute-toggle-btn { bottom: calc(12px + env(safe-area-inset-bottom, 0px)); right: 12px; width: 42px; height: 42px; }
 }
-/* mobile controls safe-area and tiny-screen tuning */
+
 .mobile-controls {
 bottom: calc(70px + env(safe-area-inset-bottom, 12px));
 }
-@media (max-width: 360px) {
-.mobile-controls { bottom: calc(140px + env(safe-area-inset-bottom, 18px)); gap:6px; }
+@media (max-width: 380px) {
+.mobile-controls { bottom: calc(120px + env(safe-area-inset-bottom, 10px)); gap:6px; }
 .mobile-controls .m-btn { padding: 6px 8px; font-size: 13px; border-radius: 10px; }
-/* Slightly smaller circular fire button on very small screens */
-#mobile-controller .fire-btn { width: 52px; min-height: 52px; }
+#mobile-controller .fire-btn { width: 54px; min-height: 54px; }
 .menu-box { padding: 14px; }
 }
-/* ensure container stacks vertically on narrow screens so HUD sits above the canvas */
+
 @media (max-width: 640px) {
 .viewport-container { flex-direction: column; align-items: center; }
 }
-/* Mobile in-canvas controller (slider + fire) */
+
 #mobile-controller {
 display:none;
 position: relative;
-width: min(94vw, 760px);
+width: min(98vw, 760px);
 max-width: 760px;
-margin-top: 8px;
+margin-top: 4px;
 z-index: 8;
-padding: 10px 10px 12px;
+padding: 4px 6px 8px;
 touch-action: pan-y;
 }
 #mobile-controller .ctrl-row {
@@ -335,7 +361,6 @@ height: 62px;
 border-radius: 18px;
 background: linear-gradient(90deg,#1f4228,#0f2a18);
 }
-/* Mobile fire button: keep perfect circular shape regardless of flex sizing */
 #mobile-controller .fire-btn {
 width: 72px;
 aspect-ratio: 1 / 1;
@@ -365,9 +390,7 @@ transform: scale(0.92);
 filter: brightness(1.15);
 }
 @media (max-width:640px) { #mobile-controller { display:block; } }
-/* slider hint overlay */
-#mobile-controller { position:relative; }
-/* Settings overlay mobile adjustments */
+
 @media (max-width: 640px) {
 .overlay-screen .menu-box { width: 92% !important; padding: 12px !important; }
 .overlay-screen .menu-box .settings-actions { flex-direction: column; gap:8px; align-items: stretch; }
@@ -375,7 +398,7 @@ filter: brightness(1.15);
 .overlay-screen .menu-box .menu-row { flex-direction: column; align-items: stretch; gap:8px; }
 .overlay-screen .menu-box label { width: 100%; }
 }
-/* Desktop: hide mobile-only control text */
+
 .controls-card-mobile { display: none; }
 @media (max-width: 640px) {
 .controls-card { display: none; }
@@ -394,7 +417,6 @@ margin-top: 6px;
 opacity: 0.7;
 margin-right: 4px;
 }
-/* Stack into a single column on narrow screens */
 @media (max-width: 420px) {
 .controls-grid {
 grid-template-columns: 1fr;
@@ -414,10 +436,21 @@ gap: 4px 0;
 <img src="cog.png" alt="Settings" style="width:18px;height:18px;display:block;" />
 </button>
 </div>
-<button id="pause-btn" class="hud-btn">Pause (P)</button>
+<button id="pause-btn" class="hud-btn">Pause</button>
 </div>
 <canvas id="game" width="720" height="960"></canvas>
-<!-- Mobile in-flow controller: slider + fire button -->
+
+<!-- Bottom-Right Floating Mute Toggle -->
+<button id="mute-btn" class="mute-toggle-btn" title="Toggle Mute" aria-label="Toggle Mute">
+<svg id="mute-icon-unmuted" viewBox="0 0 24 24">
+<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+</svg>
+<svg id="mute-icon-muted" viewBox="0 0 24 24" class="hidden">
+<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+</svg>
+</button>
+
+<!-- Mobile controller -->
 <div id="mobile-controller">
 <div class="ctrl-row">
 <div style="position:relative; width:100%;">
@@ -434,8 +467,8 @@ gap: 4px 0;
 <div class="controls-card">
 <b>Controls</b>
 <div class="controls-grid">
-<div><span class="ctrl-label">Move</span> <b> </b> or <b>A / D</b></div>
-<div><span class="ctrl-label">Fire</span> <b>Space</b> or <b>Tap</b></div>
+<div><span class="ctrl-label">Move</span> <span style="font-size:1.3rem; vertical-align:middle;"><b>&larr; &rarr;</b></span> </div>
+<div><span class="ctrl-label">Fire</span> <b>Space</b> </div>
 <div><span class="ctrl-label">Pause</span> <b>P</b></div>
 <div><span class="ctrl-label">Restart</span> <b>R</b></div>
 </div>
@@ -448,50 +481,50 @@ High Score: <b id="stat-high">0</b> &nbsp; Best Wave: <b id="stat-bestwave">0</b
 </div>
 <div id="win-overlay" class="overlay-screen hidden">
 <div class="menu-box">
-<div class="subtitle">Earth is safe — congratulations!</div>
+<div class="subtitle">Earth is safe! Congratulations!</div>
 <button id="win-restart-btn" class="play-btn">Play Again</button>
 </div>
 </div>
 <div id="unlock-overlay" class="overlay-screen hidden">
 <div class="menu-box">
-<h1 class="title">LASER ROD UNLOCKED</h1>
-<div class="subtitle">You have unlocked the laser rod! Tap or click Continue to equip it.</div>
+<h1 class="title">LASER ROD</h1>
+<div class="subtitle">You unlocked the laser rod! Continue to equip it.</div>
 <button id="unlock-continue-btn" class="play-btn">Continue</button>
 </div>
 </div>
 <div id="final-overlay" class="overlay-screen hidden">
 <div class="menu-box">
 <h1 class="title">THE FINAL BOSS APPROACHES</h1>
-<div class="subtitle">The Final Boss Approaches Earth — prepare yourself.</div>
+<div class="subtitle">The Final Boss is angry — prepare yourself.</div>
 <button id="final-start-btn" class="play-btn">Start Final Battle</button>
 </div>
 </div>
-<!-- Settings overlay (pauses game while open) -->
+<!-- Settings overlay -->
 <div id="settings-overlay" style="padding: 10px 0;" class="overlay-screen hidden">
 <div class="menu-box">
 <h2 style="margin-bottom:8px;">Settings</h2>
 <div style="color:#cbe1d9; font-size:14px; text-align:left; margin-bottom:12px;">
 </div>
 <br />
-<div style="display:flex; flex-direction:row; justify-content:space-between; align-items:center; gap:0px; margin:8px 0;">
+<div style="display:flex; flex-direction:row; justify-content:space-between; align-items:center; gap:0px; padding: 10px 0;">
 <label style="font-weight:600; color:#cbd5e1; white-space:nowrap;">Sound</label>
-<input id="setting-sound-range" type="range" min="0" max="80" value="100" style="width:80%; accent-color: rgb(7, 148, 7);" />
+<input id="setting-sound-range" type="range" min="0" max="100" value="100" style="width:80%; accent-color: rgb(7, 148, 7);" />
 </div>
-<div style="display:flex; flex-direction:row; justify-content:space-between; align-items:center; gap:0px; margin:8px 0;">
+<div style="display:flex; flex-direction:row; justify-content:space-between; align-items:center; gap:0px; padding: 10px 0;">
 <label style="font-weight:600; color:#cbd5e1; white-space:nowrap;">Music</label>
-<input id="setting-music-range" type="range" min="0" max="100" value="100" style="width:80%; accent-color: rgb(7, 148, 7);" />
+<input id="setting-music-range" type="range" min="0" max="100" value="50" style="width:80%; accent-color: rgb(7, 148, 7);" />
 </div>
 <br />
 <div class="settings-actions" style="display:flex; gap:10px; justify-content:center;">
-<button id="settings-restart-btn" class="play-btn" style="padding-bottom: 10px;text-transform: none; font-size: 1rem">Restart</button><br />
-<button id="settings-close-btn" class="play-btn" style="padding-bottom: 10px;text-transform: none; font-size: 1rem;">Back to Game</button>
+<button id="settings-restart-btn" class="play-btn" style="text-transform: none; font-size: 1rem">Restart</button></div><br>
+<button id="settings-close-btn" class="play-btn" style="text-transform: none; font-size: 1rem;">Back to Game</button>
 </div>
 </div>
 </div>
 </div>
 <script>
 "use strict";
-// Detect touch devices early (robust) and mark DOM so CSS + JS can adapt immediately
+
 function detectTouchDevice() {
 try {
 const params = new URLSearchParams(location.search);
@@ -505,18 +538,18 @@ return !!(forceMobile || hasOntouch || maxTouch || coarsePointer || uaMobile);
 }
 const isTouchDevice = detectTouchDevice();
 if (isTouchDevice) document.documentElement.classList.add('is-touch');
-// Apply immediate DOM tweaks for touch devices (in case CSS caching delays)
+
 if (isTouchDevice) {
 try {
 const desktopCards = document.querySelectorAll('.controls-card');
 desktopCards.forEach(c => c.style.display = 'none');
 const mobileCards = document.querySelectorAll('.controls-card-mobile');
 mobileCards.forEach(c => c.style.display = 'block');
-// simplify pause label
 const pb = document.getElementById('pause-btn'); if (pb) pb.textContent = 'Pause';
 const mp = document.getElementById('mobile-pause-btn'); if (mp) mp.textContent = 'Pause';
-} catch (e) { /* ignore */ }
+} catch (e) { }
 }
+
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const scoreEl = document.getElementById("score");
@@ -525,22 +558,29 @@ const livesEl = document.getElementById("lives");
 const pauseBtn = document.getElementById("pause-btn");
 const playBtn = document.getElementById("play-btn");
 const startOverlay = document.getElementById("start-overlay");
+const muteBtn = document.getElementById("mute-btn");
+const muteIconUnmuted = document.getElementById("mute-icon-unmuted");
+const muteIconMuted = document.getElementById("mute-icon-muted");
 const W = canvas.width;
 const H = canvas.height;
-// --- RESPONSIVE LETTERBOXING ---
+
+// --- RESPONSIVE SCALING FOR IPHONE SE / MOBILE ---
 function resizeCanvas() {
 const windowWidth = window.innerWidth;
 const windowHeight = window.innerHeight;
 const targetRatio = W / H;
+
 let newWidth = windowWidth;
-if (typeof isTouchDevice !== 'undefined' && isTouchDevice && windowWidth <= 640) {
-newWidth = Math.min(Math.floor(windowWidth * 0.92), 520);
-if (newWidth < 320) newWidth = 320;
+if (typeof isTouchDevice !== 'undefined' && isTouchDevice) {
+newWidth = Math.min(windowWidth * 0.98, 560);
+if (newWidth < 300) newWidth = 300;
 }
 let newHeight = newWidth / targetRatio;
-let controlReserve = (typeof isTouchDevice !== 'undefined' && isTouchDevice) ? 90 : 0;
-if ((typeof isTouchDevice !== 'undefined' && isTouchDevice) && windowWidth <= 360) controlReserve = 130;
-const availHeight = Math.max(windowHeight * 0.62, windowHeight - 160 - controlReserve);
+let controlReserve = (typeof isTouchDevice !== 'undefined' && isTouchDevice) ? 55 : 0;
+if ((typeof isTouchDevice !== 'undefined' && isTouchDevice) && windowWidth <= 380) {
+controlReserve = 65; // Optimized fit for small screens like iPhone SE
+}
+const availHeight = Math.max(windowHeight * 0.70, windowHeight - 90 - controlReserve);
 if (newHeight > availHeight) {
 newHeight = availHeight;
 newWidth = Math.floor(newHeight * targetRatio);
@@ -550,19 +590,26 @@ canvas.style.height = `${newHeight}px`;
 }
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
+
 // --- WEB AUDIO API SOUND & MUSIC SYSTEM ---
 let audioCtx = null;
-let musicVolume = 1.0;
+let musicVolume = 0.5; // Starts at 50% volume
+let isMuted = false;
+let preMuteMasterVol = 1.0;
+let preMuteMusicVol = 0.5;
 let currentTrack = null;
 const tracks = {
-rampage: new Audio('rampage.mp3')
+rampage: new Audio('rampage.mp3'),
+titles: new Audio('titles.mp3')
 };
 const trackNodes = {};
+
 function initAudio() {
 if (!audioCtx) {
 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 }
 }
+
 function initMusicSystem() {
 initAudio();
 if (Object.keys(trackNodes).length > 0) return;
@@ -577,30 +624,18 @@ gainNode.connect(audioCtx.destination);
 trackNodes[key] = { audio, gainNode };
 });
 }
+
 function playMusicTrack(targetTrackKey, fadeDuration = 1.2) {
-targetTrackKey = 'rampage';
 if (!audioCtx) initAudio();
-console.log('[AudioDebug] playMusicTrack called for:', targetTrackKey, {
-audioCtxState: audioCtx.state,
-inIframe: window.top !== window.self,
-hasFocus: document.hasFocus(),
-href: location.href
-});
 if (audioCtx.state === 'suspended') {
-audioCtx.resume().then(() => {
-console.log('[AudioDebug] audioCtx.resume() resolved, new state:', audioCtx.state);
-}).catch(err => {
-console.log('[AudioDebug] audioCtx.resume() REJECTED:', err);
-});
+audioCtx.resume().then(() => {}).catch(err => {});
 }
 initMusicSystem();
 const now = audioCtx.currentTime;
 if (currentTrack === targetTrackKey) {
 const node = trackNodes[targetTrackKey];
 if (node && node.audio.paused) {
-node.audio.play().then(() => {
-console.log('[AudioDebug] retry play() SUCCEEDED for', targetTrackKey);
-}).catch(e => console.log("[AudioDebug] Audio play blocked by browser:", e));
+node.audio.play().catch(e => console.log("Audio play blocked by browser:", e));
 node.gainNode.gain.cancelScheduledValues(now);
 node.gainNode.gain.setValueAtTime(node.gainNode.gain.value, now);
 node.gainNode.gain.linearRampToValueAtTime(musicVolume, now + fadeDuration);
@@ -613,9 +648,7 @@ const { audio, gainNode } = trackNodes[key];
 gainNode.gain.cancelScheduledValues(now);
 if (key === targetTrackKey) {
 if (audio.paused) {
-audio.play().then(() => {
-console.log('[AudioDebug] play() SUCCEEDED for', targetTrackKey);
-}).catch(e => console.log("[AudioDebug] Audio play blocked by browser:", e));
+audio.play().catch(e => console.log("Audio play blocked by browser:", e));
 }
 gainNode.gain.setValueAtTime(gainNode.gain.value, now);
 gainNode.gain.linearRampToValueAtTime(musicVolume, now + fadeDuration);
@@ -625,6 +658,38 @@ gainNode.gain.linearRampToValueAtTime(0, now + fadeDuration);
 }
 });
 }
+
+function toggleMute() {
+isMuted = !isMuted;
+if (isMuted) {
+preMuteMasterVol = masterVolume;
+preMuteMusicVol = musicVolume;
+masterVolume = 0;
+musicVolume = 0;
+if (muteIconUnmuted) muteIconUnmuted.classList.add('hidden');
+if (muteIconMuted) muteIconMuted.classList.remove('hidden');
+} else {
+masterVolume = preMuteMasterVol > 0 ? preMuteMasterVol : 1.0;
+musicVolume = preMuteMusicVol > 0 ? preMuteMusicVol : 0.5;
+if (muteIconUnmuted) muteIconUnmuted.classList.remove('hidden');
+if (muteIconMuted) muteIconMuted.classList.add('hidden');
+}
+const settingSound = document.getElementById('setting-sound-range');
+const settingMusic = document.getElementById('setting-music-range');
+if (settingSound) settingSound.value = Math.round(masterVolume * 100);
+if (settingMusic) settingMusic.value = Math.round(musicVolume * 100);
+
+if (currentTrack && trackNodes[currentTrack] && audioCtx) {
+const now = audioCtx.currentTime;
+trackNodes[currentTrack].gainNode.gain.cancelScheduledValues(now);
+trackNodes[currentTrack].gainNode.gain.setValueAtTime(musicVolume, now);
+}
+}
+
+if (muteBtn) {
+muteBtn.addEventListener('click', toggleMute);
+}
+
 function playSound(type) {
 if (!audioCtx || !soundEnabled) return;
 const now = audioCtx.currentTime;
@@ -716,6 +781,7 @@ osc.stop(now + idx * 0.05 + 0.08);
 });
 }
 }
+
 // --- GAME ENGINE STATE ---
 const keys = {};
 let gameStarted = false;
@@ -752,6 +818,7 @@ let soundEnabled = true;
 let touchFireEnabled = true;
 let prevPaused = false;
 let masterVolume = 1.0;
+
 function loadStats() {
 try {
 const raw = localStorage.getItem('alienSmasherStats');
@@ -759,7 +826,7 @@ if (raw) {
 const parsed = JSON.parse(raw);
 stats = Object.assign(stats, parsed || {});
 }
-} catch (err) { /* ignore parse errors */ }
+} catch (err) { }
 updateStatsUI();
 }
 function saveStats() {
@@ -783,6 +850,7 @@ const sw = document.getElementById('stat-wins'); if (sw) sw.textContent = stats.
 const sb = document.getElementById('stat-bestwave'); if (sb) sb.textContent = stats.bestWave || 0;
 const sh = document.getElementById('stat-high'); if (sh) sh.textContent = stats.highScore || 0;
 }
+
 for (let i = 0; i < 130; i++) {
 stars.push({
 x: Math.random() * W,
@@ -792,6 +860,7 @@ speed: Math.random() * 25 + 8,
 alpha: Math.random() * .7 + .2
 });
 }
+
 function startGame() {
 initAudio();
 initMusicSystem();
@@ -799,6 +868,7 @@ gameStarted = true;
 startOverlay.classList.add("hidden");
 resetGame();
 }
+
 function resetGame() {
 score = 0;
 wave = 1;
@@ -836,18 +906,21 @@ statsUpdated = false;
 pauseBtn.textContent = "Pause (P)";
 const mpBtn = document.getElementById('mobile-pause-btn'); if (mpBtn) mpBtn.textContent = 'Pause';
 }
+
 function togglePause() {
 if (gameOver || !gameStarted) return;
 isPaused = !isPaused;
-pauseBtn.textContent = isPaused ? "Resume (P)" : "Pause (P)";
+pauseBtn.textContent = isPaused ? "Resume (R)" : "Pause (P)";
 const mp = document.getElementById('mobile-pause-btn'); if (mp) mp.textContent = isPaused ? 'Resume' : 'Pause';
 }
+
 function updateHUD() {
 scoreEl.textContent = score;
 waveEl.textContent = wave;
 livesEl.textContent = lives;
 const hs = document.getElementById('highscore'); if (hs) hs.textContent = stats.highScore || 0;
 }
+
 function createWave() {
 enemies = [];
 playMusicTrack('rampage');
@@ -857,7 +930,6 @@ if (isBossWave) {
 const bossTier = wave / 5;
 let hp = 10 + bossTier * 8;
 if (bossTier === 6) hp = hp * 2;
-// Adjust size: Final Boss (tier 6) is smaller than standard bosses
 const baseBossSize = (bossTier === 6) ? 55 : Math.min(80, 55 + bossTier * 5);
 const size = baseBossSize * mobileEnemyScale;
 enemies.push({
@@ -889,7 +961,7 @@ baseX: W / 2,
 id: nextEnemyId++,
 row: 1,
 col: 0,
-size: 38 * mobileEnemyScale,
+size: 42 * mobileEnemyScale,
 boss: false,
 miniBoss: true,
 hp: 3,
@@ -909,7 +981,7 @@ baseX: W / 2 - 160,
 id: nextEnemyId++,
 row: 1,
 col: 0,
-size: 38 * mobileEnemyScale,
+size: 42 * mobileEnemyScale,
 boss: false,
 miniBoss: true,
 hp: 3,
@@ -928,7 +1000,7 @@ baseX: W / 2 + 160,
 id: nextEnemyId++,
 row: 1,
 col: 1,
-size: 38 * mobileEnemyScale,
+size: 42 * mobileEnemyScale,
 boss: false,
 miniBoss: true,
 hp: 3,
@@ -936,7 +1008,6 @@ maxHp: 3,
 alive: true,
 phase: Math.PI,
 dive: false,
-diveT: 0,
 diveDir: 1,
 hitTimer: 0
 });
@@ -957,7 +1028,7 @@ const y = 105 + row * 62;
 const isMini = miniBossIndexes.includes(i);
 const isPurple = (!isMini && wave > 4 && Math.random() < 0.10);
 const hp = isMini ? 3 : (isPurple ? 2 : 1);
-const baseSize = isMini ? 38 : 32;
+const baseSize = isMini ? 42 : 42; // O.G. enemy size increased from 32 to 38
 enemies.push({
 id: nextEnemyId++,
 x: x,
@@ -970,7 +1041,7 @@ boss: false,
 miniBoss: isMini,
 returning: false,
 returnT: 0,
-returnDuration: 1.6,
+returnDuration: 0.8,
 returnStartX: x,
 returnStartY: y,
 purple: isPurple,
@@ -987,6 +1058,7 @@ fastShooter: (wave > 3) && (row === rows - 1)
 }
 }
 }
+
 function shootPlayer() {
 if (!gameStarted || playerShotCooldown > 0 || gameOver || isPaused) return;
 if (bullets.length >= 5) return;
@@ -1019,8 +1091,12 @@ playerShotCooldown = 0.15;
 }
 updateHUD();
 }
+
 function shootEnemy(enemy) {
 if (!enemy.alive) return;
+// Rule check: Do not shoot while off screen
+if (enemy.y < 0 || enemy.x < 0 || enemy.x > W) return;
+
 const bulletSpeed = 200 + wave * 10;
 if (enemy.boss) {
 const canSpawnHeart = (enemy.heartsSpawned || 0) < 5;
@@ -1055,6 +1131,7 @@ enemyBullets.push({ x: enemy.x + offsetX, y: enemy.y + enemy.size / 2, vx: vx, v
 }
 }
 } else if (enemy.miniBoss) {
+// Green alien bullets
 enemyBullets.push({ x: enemy.x - 12, y: enemy.y + enemy.size / 2, vx: -20, vy: bulletSpeed, radius: 7 * (isTouchDevice ? 1.15 : 1), alpha: 1, isHeart: false, tint: 'mini', ownerId: enemy.id });
 enemyBullets.push({ x: enemy.x + 12, y: enemy.y + enemy.size / 2, vx: 20, vy: bulletSpeed, radius: 7 * (isTouchDevice ? 1.15 : 1), alpha: 1, isHeart: false, tint: 'mini', ownerId: enemy.id });
 } else {
@@ -1068,18 +1145,21 @@ enemyBullets.push(regularBullet);
 }
 playSound('enemy_laser');
 }
+
 function chooseShooter() {
-const living = enemies.filter(e => e.alive);
-if (!living.length) return;
-const fast = living.filter(e => e.fastShooter);
+// Filter for enemies that are alive AND currently on screen
+const livingOnScreen = enemies.filter(e => e.alive && e.y >= 0 && e.x >= 0 && e.x <= W);
+if (!livingOnScreen.length) return;
+const fast = livingOnScreen.filter(e => e.fastShooter);
 let shooter;
 if (fast.length && Math.random() < 0.7) {
 shooter = fast[Math.floor(Math.random() * fast.length)];
 } else {
-shooter = living[Math.floor(Math.random() * living.length)];
+shooter = livingOnScreen[Math.floor(Math.random() * livingOnScreen.length)];
 }
 shootEnemy(shooter);
 }
+
 function spawnExplosion(x, y, amount = 14) {
 for (let i = 0; i < amount; i++) {
 const a = Math.random() * Math.PI * 2;
@@ -1094,6 +1174,7 @@ size: Math.random() * 3 + 1
 });
 }
 }
+
 function spawnConfetti(amount = 120) {
 confetti = [];
 const colors = ['#ff4d6d','#ffd166','#7ee787','#9ad0ff','#ff99cc'];
@@ -1111,6 +1192,7 @@ life: Math.random() * 4 + 2
 });
 }
 }
+
 function updateConfetti(dt) {
 for (const c of confetti) {
 c.x += c.vx * dt;
@@ -1121,6 +1203,7 @@ c.life -= dt;
 }
 confetti = confetti.filter(c => c.life > 0 && c.y < H + 200);
 }
+
 function drawConfetti() {
 for (const c of confetti) {
 ctx.save();
@@ -1131,9 +1214,11 @@ ctx.fillRect(-c.size/2, -c.size/2, c.size, c.size*0.6);
 ctx.restore();
 }
 }
+
 function circleHit(a, b, radius) {
 return Math.hypot(a.x - b.x, a.y - b.y) < radius;
 }
+
 function circleRectCollision(circle, rect) {
 const rectLeft = rect.x - rect.width / 2;
 const rectRight = rect.x + rect.width / 2;
@@ -1146,6 +1231,7 @@ const dy = circle.y - nearestY;
 const r = (circle.radius || 0) + 2;
 return (dx * dx + dy * dy) < (r * r);
 }
+
 function damagePlayer() {
 if (player.invincible > 0 || gameOver) return;
 lives--;
@@ -1155,10 +1241,11 @@ playSound('explosion');
 updateHUD();
 if (lives <= 0) {
 gameOver = true;
-playMusicTrack('rampage');
+playMusicTrack('titles');
 finalizeStats(false);
 }
 }
+
 function update(dt) {
 if (!gameStarted || isPaused) return;
 for (const s of stars) {
@@ -1181,14 +1268,23 @@ if (keys["ArrowRight"] || keys["d"] || keys["D"]) direction += 1;
 player.x += direction * player.speed * dt;
 player.x = Math.max(28, Math.min(W - 28, player.x));
 if (keys[" "] || keys["Spacebar"]) shootPlayer();
+
 const formationSpeed = 30 + wave * 3;
 const formationOffset = Math.sin(performance.now() / 900) * formationSpeed;
+
 for (const e of enemies) {
 if (!e.alive) continue;
 if (e.hitTimer > 0) e.hitTimer = Math.max(0, e.hitTimer - dt);
 if (e.boss) {
 e.x = e.baseX + Math.sin(performance.now() / 700) * (160 + wave * 3);
+if (e.bossTier === 6) {
+// Final Boss movement: occasionally swoops 50% down towards player
+const swoopCycle = Math.sin(performance.now() / 1500);
+const swoopOffset = Math.max(0, swoopCycle) * (H * 0.5 - 130);
+e.y = 130 + swoopOffset + Math.cos(performance.now() / 1000) * 15;
+} else {
 e.y = 130 + Math.cos(performance.now() / 1000) * 15;
+}
 } else if (e.dive) {
 e.diveT += dt;
 e.x += e.diveDir * (70 + wave * 5) * dt;
@@ -1200,31 +1296,19 @@ e.returning = true;
 e.returnT = 0;
 e.targetX = e.baseX;
 e.targetY = 100 + e.row * 58;
-if (e.y > H + 60 || e.x < -60 || e.x > W + 60) {
-e.returnStartX = e.baseX + (Math.random() - 0.5) * 80;
-e.returnStartY = -40 - Math.random() * 80;
-e.returnDuration = 3.4;
-} else {
-e.returnStartX = e.x;
-e.returnStartY = e.y;
-e.returnDuration = 3.6;
-}
+e.returnStartX = e.x < 0 ? -20 : (e.x > W ? W + 20 : e.x);
+e.returnStartY = e.y > H ? -40 : e.y;
+e.returnDuration = 2.8; // Faster return speed
 }
 } else {
 if (e.returning) {
 e.returnT = Math.min(e.returnDuration, e.returnT + dt);
 const tNorm = Math.min(1, e.returnT / e.returnDuration);
 const easeFunc = (v) => v * v * (3 - 2 * v);
-const horizPhase = 0.65;
-if (tNorm < horizPhase) {
-const s = easeFunc(tNorm / horizPhase);
-e.x = e.returnStartX + (e.targetX - e.returnStartX) * s;
-e.y = e.returnStartY + (e.targetY - e.returnStartY) * (0.12 * s);
-} else {
-e.x = e.targetX;
-const v = easeFunc((tNorm - horizPhase) / (1 - horizPhase));
+const v = easeFunc(tNorm);
+e.x = e.returnStartX + (e.targetX - e.returnStartX) * v;
 e.y = e.returnStartY + (e.targetY - e.returnStartY) * v;
-}
+
 if (e.returnT >= e.returnDuration) {
 e.returning = false;
 e.returnT = 0;
@@ -1244,6 +1328,7 @@ e.dive = true;
 e.diveT = 0;
 }
 }
+
 const allEnemiesDefeated = enemies.every(e => !e.alive);
 if (!allEnemiesDefeated) {
 enemyShootTimer -= dt;
@@ -1287,7 +1372,7 @@ fadeBulletsTimer = 0;
 } else if (wave >= 30) {
 showWinOverlay = true;
 gameOver = true;
-playMusicTrack('rampage');
+playMusicTrack('titles');
 const winEl = document.getElementById('win-overlay'); if (winEl) winEl.classList.remove('hidden');
 spawnConfetti(160);
 } else {
@@ -1301,6 +1386,7 @@ updateHUD();
 }
 }
 }
+
 for (const b of bullets) b.y += b.vy * dt;
 bullets = bullets.filter(b => b.laser ? (b.y > -(b.length || 0)) : (b.y > -20));
 for (const b of bullets) {
@@ -1359,7 +1445,7 @@ laserUnlockShown = true;
 if (tier === 6) {
 showWinOverlay = true;
 gameOver = true;
-playMusicTrack('rampage');
+playMusicTrack('titles');
 const winEl = document.getElementById('win-overlay'); if (winEl) winEl.classList.remove('hidden');
 spawnConfetti(160);
 finalizeStats(true);
@@ -1375,6 +1461,7 @@ break;
 }
 }
 }
+
 for (const e of enemies) {
 if (e.alive && e.y > H - 130) {
 const horizOverlap = Math.abs(e.x - player.x) < (player.width / 2 + e.size / 2 + 6);
@@ -1385,6 +1472,7 @@ if (horizOverlap) damagePlayer();
 bullets = bullets.filter(b => b.y > -50);
 updateParticles(dt);
 }
+
 function updateParticles(dt) {
 for (const p of particles) {
 p.x += p.vx * dt;
@@ -1395,6 +1483,7 @@ p.life -= dt;
 }
 particles = particles.filter(p => p.life > 0);
 }
+
 function drawStars() {
 for (const s of stars) {
 ctx.globalAlpha = s.alpha;
@@ -1405,6 +1494,7 @@ ctx.fill();
 }
 ctx.globalAlpha = 1;
 }
+
 function drawPlayer() {
 ctx.save();
 ctx.translate(player.x, player.y);
@@ -1480,13 +1570,11 @@ ctx.stroke();
 ctx.restore();
 }
 
-// --- NEW CUSTOM DRAWINGS FOR BAD GUY CHARACTERS ---
 function drawEnemy(e) {
 ctx.save();
 ctx.translate(e.x, e.y);
 const s = e.size;
 
-// Theme color determination based on state and drawing labels
 let baseFill = "#3f687e";
 let strokeFill = "#7fb4c9";
 let coreFill = "#5c91a7";
@@ -1496,24 +1584,24 @@ baseFill = "#ff3333";
 strokeFill = "#ffffff";
 coreFill = "#ffffaa";
 } else if (e.boss) {
-if (e.bossTier === 6) { // Final Boss
+if (e.bossTier === 6) {
 baseFill = "#d93838";
 strokeFill = "#ff9999";
 coreFill = "#ffea79";
-} else { // Standard Boss
+} else {
 baseFill = "#a82e5f";
 strokeFill = "#ff69b4";
 coreFill = "#ffd36b";
 }
-} else if (e.miniBoss) { // Green enemy variant or mini-boss
+} else if (e.miniBoss) {
 baseFill = "#2e9354";
 strokeFill = "#78f0a6";
 coreFill = "#a3ffca";
-} else if (e.purple) { // Purple drawing variant
+} else if (e.purple) {
 baseFill = "#7b3fa8";
 strokeFill = "#d499ff";
 coreFill = "#e6c2ff";
-} else if (e.fastShooter) { // Orange drawing variant
+} else if (e.fastShooter) {
 baseFill = "#d97724";
 strokeFill = "#ffbc75";
 coreFill = "#ffe3a3";
@@ -1525,8 +1613,6 @@ ctx.lineWidth = 2.5;
 
 if (e.boss) {
 if (e.bossTier === 6) {
-// --- FINAL BOSS DRAWING ---
-// Top Crescent Horns
 ctx.beginPath();
 ctx.arc(0, -s * 0.1, s * 0.45, Math.PI * 1.1, Math.PI * 1.9);
 ctx.lineTo(0, -s * 0.1);
@@ -1534,75 +1620,87 @@ ctx.closePath();
 ctx.fill();
 ctx.stroke();
 
-// Main Dome Body
 ctx.beginPath();
 ctx.arc(0, 0, s * 0.4, Math.PI, 0);
 ctx.closePath();
 ctx.fill();
 ctx.stroke();
 
-// Ring / Attachment Structure
 ctx.beginPath();
 ctx.ellipse(0, s * 0.2, s * 0.35, s * 0.15, 0, 0, Math.PI * 2);
 ctx.fill();
 ctx.stroke();
 
-// Center Core / Cockpit
 ctx.fillStyle = coreFill;
 ctx.beginPath();
 ctx.arc(0, -s * 0.1, s * 0.18, 0, Math.PI * 2);
 ctx.fill();
 
-// 3 Bottom Thrusters / Jets
 ctx.strokeStyle = strokeFill;
 ctx.beginPath();
 ctx.moveTo(-s * 0.2, s * 0.35); ctx.lineTo(-s * 0.3, s * 0.6);
 ctx.moveTo(0, s * 0.35); ctx.lineTo(0, s * 0.65);
 ctx.moveTo(s * 0.2, s * 0.35); ctx.lineTo(s * 0.3, s * 0.6);
 ctx.stroke();
-
 } else {
-// --- REGULAR BOSS DRAWING ---
-// Main Rectangular Body
+// REDESIGNED ADVANCED REGULAR BOSS SPACESHIP
+// Main central fuselage
 ctx.beginPath();
-ctx.rect(-s * 0.45, -s * 0.2, s * 0.9, s * 0.5);
+ctx.moveTo(0, -s * 0.55);
+ctx.lineTo(s * 0.18, -s * 0.2);
+ctx.lineTo(s * 0.22, s * 0.25);
+ctx.lineTo(s * 0.1, s * 0.48);
+ctx.lineTo(-s * 0.1, s * 0.48);
+ctx.lineTo(-s * 0.22, s * 0.25);
+ctx.lineTo(-s * 0.18, -s * 0.2);
+ctx.closePath();
 ctx.fill();
 ctx.stroke();
 
-// Top Curved Horn Antennae
+// Advanced swept-forward outer wings
 ctx.beginPath();
-ctx.moveTo(-s * 0.45, -s * 0.2);
-ctx.quadraticCurveTo(-s * 0.55, -s * 0.65, -s * 0.15, -s * 0.6);
-ctx.stroke();
-
-ctx.beginPath();
-ctx.moveTo(s * 0.45, -s * 0.2);
-ctx.quadraticCurveTo(s * 0.55, -s * 0.65, s * 0.15, -s * 0.6);
-ctx.stroke();
-
-// Bottom Landing Gear / Double Vertical Engines
-ctx.beginPath();
-ctx.moveTo(-s * 0.3, s * 0.3);
-ctx.lineTo(-s * 0.35, s * 0.65);
-ctx.lineTo(-s * 0.2, s * 0.3);
+ctx.moveTo(-s * 0.18, -s * 0.1);
+ctx.lineTo(-s * 0.6, s * 0.15);
+ctx.lineTo(-s * 0.52, s * 0.38);
+ctx.lineTo(-s * 0.2, s * 0.2);
+ctx.closePath();
 ctx.fill();
 ctx.stroke();
 
 ctx.beginPath();
-ctx.moveTo(s * 0.3, s * 0.3);
-ctx.lineTo(s * 0.35, s * 0.65);
-ctx.lineTo(s * 0.2, s * 0.3);
+ctx.moveTo(s * 0.18, -s * 0.1);
+ctx.lineTo(s * 0.6, s * 0.15);
+ctx.lineTo(s * 0.52, s * 0.38);
+ctx.lineTo(s * 0.2, s * 0.2);
+ctx.closePath();
 ctx.fill();
 ctx.stroke();
 
-// Glow Core
+// Dual energy cannons
+ctx.beginPath();
+ctx.rect(-s * 0.58, s * 0.1, s * 0.05, s * 0.35);
+ctx.rect(s * 0.53, s * 0.1, s * 0.05, s * 0.35);
+ctx.fillStyle = strokeFill;
+ctx.fill();
+
+// Cockpits & glowing core element
 ctx.fillStyle = coreFill;
-ctx.fillRect(-s * 0.25, -s * 0.05, s * 0.5, s * 0.2);
+ctx.beginPath();
+ctx.ellipse(0, -s * 0.15, s * 0.09, s * 0.2, 0, 0, Math.PI * 2);
+ctx.fill();
+ctx.beginPath();
+ctx.arc(-s * 0.35, s * 0.15, s * 0.06, 0, Math.PI * 2);
+ctx.arc(s * 0.35, s * 0.15, s * 0.06, 0, Math.PI * 2);
+ctx.fill();
+
+// Thruster flame trails
+ctx.fillStyle = strokeFill;
+ctx.beginPath();
+ctx.moveTo(-s * 0.12, s * 0.48); ctx.lineTo(-s * 0.06, s * 0.62); ctx.lineTo(0, s * 0.48);
+ctx.moveTo(0, s * 0.48); ctx.lineTo(s * 0.06, s * 0.62); ctx.lineTo(s * 0.12, s * 0.48);
+ctx.fill();
 }
 } else {
-// --- REGULAR BAD GUY SHAPES (O.G., Green, Orange, Purple) ---
-
-// Outer Shield / Primary Inverted Triangle Base Shape (O.G. Base)
 ctx.beginPath();
 ctx.moveTo(-s * 0.48, -s * 0.42);
 ctx.lineTo(s * 0.48, -s * 0.42);
@@ -1610,22 +1708,18 @@ ctx.lineTo(0, s * 0.48);
 ctx.closePath();
 ctx.fill();
 
-// Inner Trap/Notch Cutout Shape
 ctx.beginPath();
 ctx.moveTo(-s * 0.28, -s * 0.25);
 ctx.lineTo(s * 0.28, -s * 0.25);
 ctx.lineTo(s * 0.18, s * 0.12);
 ctx.lineTo(-s * 0.18, s * 0.12);
 ctx.closePath();
-ctx.fillStyle = "#020c06"; // Match dark background
+ctx.fillStyle = "#020c06";
 ctx.fill();
 
-// Re-stroke outer frame
 ctx.stroke();
 
-// Variant Modifications based on Hand Drawing Labels
 if (e.miniBoss) { 
-// GREEN VARIANT: Downward sharp fins extending off bottom tips
 ctx.fillStyle = baseFill;
 ctx.beginPath();
 ctx.moveTo(-s * 0.35, s * 0.05);
@@ -1640,9 +1734,7 @@ ctx.lineTo(s * 0.45, s * 0.4);
 ctx.lineTo(s * 0.22, s * 0.25);
 ctx.closePath();
 ctx.fill(); ctx.stroke();
-
 } else if (e.fastShooter) {
-// ORANGE VARIANT: Side Wing Guards / Feathered Extensions
 ctx.fillStyle = baseFill;
 ctx.beginPath();
 ctx.moveTo(-s * 0.32, -s * 0.1);
@@ -1657,23 +1749,19 @@ ctx.lineTo(s * 0.6, s * 0.05);
 ctx.lineTo(s * 0.2, s * 0.25);
 ctx.closePath();
 ctx.fill(); ctx.stroke();
-
 } else if (e.purple) {
-// PURPLE VARIANT: Pedestal / Shield Pod Core extending down
 ctx.fillStyle = baseFill;
 ctx.beginPath();
 ctx.arc(0, s * 0.18, s * 0.14, 0, Math.PI * 2);
 ctx.fill(); ctx.stroke();
 }
 
-// Glowing Core Eye/Orb (Present on O.G. & Green drawings)
 ctx.fillStyle = coreFill;
 ctx.beginPath();
 ctx.arc(0, -s * 0.3, s * 0.08, 0, Math.PI * 2);
 ctx.fill();
 }
 
-// Draw Health Bar for damaged/boss units
 if (e.hp < e.maxHp || e.boss || e.miniBoss) {
 ctx.fillStyle = "#1b2030";
 ctx.fillRect(-s / 2, -s / 2 - 12, s, 6);
@@ -1723,10 +1811,11 @@ ctx.bezierCurveTo(b.x + r, b.y - r * 0.5, b.x, b.y - r * 0.5, b.x, b.y + r * 0.4
 ctx.fill();
 } else {
 if (b.tint === 'mini') {
-ctx.strokeStyle = "rgba(255,120,180,0.5)";
-ctx.shadowBlur = 12;
-ctx.shadowColor = "#ff99cc";
-ctx.fillStyle = "#ffd9ee";
+// Modified green enemy bullet tint to orange-red
+ctx.strokeStyle = "rgba(255, 80, 20, 0.6)";
+ctx.shadowBlur = 14;
+ctx.shadowColor = "#ff4500";
+ctx.fillStyle = "#ff7733";
 } else if (b.tint === 'back') {
 ctx.strokeStyle = "rgba(47,127,69,0.45)";
 ctx.shadowBlur = 16;
@@ -1740,11 +1829,11 @@ ctx.beginPath();
 ctx.moveTo(b.x, b.y);
 ctx.lineTo(b.x - b.vx * 0.08, b.y - b.vy * 0.08);
 ctx.stroke();
-if (!b.tint || (b.tint !== 'back' && b.tint !== 'mini')) {
+if (!b.tint || b.tint === 'mini') {
 ctx.shadowBlur = 14;
-ctx.shadowColor = "#ff0044";
-ctx.fillStyle = "#ffff55";
-ctx.strokeStyle = "#ff0044";
+ctx.shadowColor = b.tint === 'mini' ? "#ff3300" : "#ff0044";
+ctx.fillStyle = b.tint === 'mini' ? "#ffcc00" : "#ffff55";
+ctx.strokeStyle = b.tint === 'mini' ? "#ff3300" : "#ff0044";
 ctx.lineWidth = 3;
 } else {
 ctx.lineWidth = 2.5;
@@ -1757,6 +1846,7 @@ ctx.stroke();
 ctx.restore();
 }
 }
+
 function drawParticles() {
 for (const p of particles) {
 ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
@@ -1765,6 +1855,7 @@ ctx.fillRect(p.x, p.y, p.size, p.size);
 }
 ctx.globalAlpha = 1;
 }
+
 function drawEarth() {
 const ex = W / 2;
 const ey = H - 120;
@@ -1844,6 +1935,7 @@ ctx.arc(ex, ey, er - 2, 0, Math.PI * 2);
 ctx.stroke();
 ctx.restore();
 }
+
 function drawOverlay() {
 if (!gameStarted || (!gameOver && !isPaused && waveClearTimer <= 0 && !showUnlockOverlay && !showWinOverlay)) return;
 ctx.fillStyle = "rgba(2, 4, 12, .75)";
@@ -1890,6 +1982,7 @@ ctx.fillStyle = "#94a3b8";
 ctx.fillText("Prepare for the next attack...", W / 2, H / 2 + 22);
 }
 }
+
 function draw() {
 ctx.clearRect(0, 0, W, H);
 const grad = ctx.createLinearGradient(0, 0, 0, H);
@@ -1914,6 +2007,7 @@ ctx.lineTo(W, H - 48);
 ctx.stroke();
 drawOverlay();
 }
+
 function loop(timestamp) {
 const dt = Math.min(.033, (timestamp - lastTime) / 1000 || 0);
 lastTime = timestamp;
@@ -1921,6 +2015,7 @@ update(dt);
 draw();
 requestAnimationFrame(loop);
 }
+
 window.addEventListener("keydown", e => {
 keys[e.key] = true;
 if (e.key === " " || e.code === "Space") {
@@ -1944,12 +2039,14 @@ updateHUD();
 window.addEventListener("keyup", e => {
 keys[e.key] = false;
 });
+
 function handlePointer(x) {
 if (!gameStarted || isPaused) return;
 const rect = canvas.getBoundingClientRect();
 const scaleX = W / rect.width;
 player.x = Math.max(28, Math.min(W - 28, (x - rect.left) * scaleX));
 }
+
 canvas.addEventListener("mousemove", e => {
 handlePointer(e.clientX);
 });
@@ -1962,27 +2059,15 @@ canvas.addEventListener("touchmove", e => {
 handlePointer(e.touches[0].clientX);
 }, { passive: true });
 canvas.addEventListener("click", () => shootPlayer());
+
 if (playBtn) {
-playBtn.addEventListener("click", (e) => {
-console.log('[AudioDebug] Play button click event:', {
-isTrusted: e.isTrusted,
-type: e.type,
-inIframe: window.top !== window.self,
-topOrigin: (function(){ try { return window.top.location.origin; } catch(err) { return 'CROSS-ORIGIN (blocked)'; } })()
-});
-startGame();
-});
+playBtn.addEventListener("click", () => startGame());
 playBtn.addEventListener('touchend', (e) => { e.preventDefault(); startGame(); }, { passive: false });
 playBtn.style.touchAction = 'manipulation';
 }
-{
-const ms = document.getElementById('mobile-settings-btn');
-if (ms) {
-ms.addEventListener('pointerdown', (e) => { e.preventDefault(); ms.click(); });
-ms.addEventListener('touchend', (e) => { e.preventDefault(); ms.click(); }, { passive: false });
-}
-}
+
 pauseBtn.addEventListener("click", togglePause);
+
 const winRestartBtn = document.getElementById('win-restart-btn');
 const winOverlayEl = document.getElementById('win-overlay');
 if (winRestartBtn) {
@@ -1994,6 +2079,7 @@ confetti = [];
 resetGame();
 });
 }
+
 const unlockContinueBtn = document.getElementById('unlock-continue-btn');
 const unlockOverlayEl = document.getElementById('unlock-overlay');
 if (unlockContinueBtn) {
@@ -2006,6 +2092,7 @@ const mpBtn2 = document.getElementById('mobile-pause-btn'); if (mpBtn2) mpBtn2.t
 updateHUD();
 });
 }
+
 const finalStartBtn = document.getElementById('final-start-btn');
 const finalOverlayEl = document.getElementById('final-overlay');
 if (finalStartBtn) {
@@ -2021,30 +2108,28 @@ createWave();
 updateHUD();
 });
 }
+
 const mobileSlider = document.getElementById('mobile-slider');
 const mobileFireBtn = document.getElementById('mobile-fire');
-const mobileSliderHint = document.getElementById('mobile-slider-hint');
 const settingsOverlayEl = document.getElementById('settings-overlay');
 const settingsCloseBtn = document.getElementById('settings-close-btn');
 const settingSoundRange = document.getElementById('setting-sound-range');
 const settingMusicRange = document.getElementById('setting-music-range');
 const settingsRestartBtn = document.getElementById('settings-restart-btn');
 const topSettingsBtn = document.getElementById('top-settings-btn');
+
 if (topSettingsBtn) {
 topSettingsBtn.addEventListener('click', () => {
 if (!settingsOverlayEl) return;
 prevPaused = isPaused;
 isPaused = true;
-pauseBtn.textContent = "Resume (P)";
+pauseBtn.textContent = "Resume";
 settingsOverlayEl.classList.remove('hidden');
 if (settingSoundRange) settingSoundRange.value = Math.round(masterVolume * 100);
 if (settingMusicRange) settingMusicRange.value = Math.round(musicVolume * 100);
 });
 }
-try {
-const maybeMobileSettings = document.getElementById('mobile-settings-btn');
-if (maybeMobileSettings) maybeMobileSettings.remove();
-} catch (e) { }
+
 if (mobileSlider) {
 const updateSliderPosition = (clientX) => {
 try {
@@ -2053,7 +2138,6 @@ const pct = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
 mobileSlider.value = String(Math.round(pct * 100));
 const targetX = canvas.getBoundingClientRect().left + pct * canvas.getBoundingClientRect().width;
 handlePointer(targetX);
-if (mobileSliderHint) mobileSliderHint.style.display = 'none';
 } catch (err) {}
 };
 mobileSlider.value = 50;
@@ -2063,29 +2147,29 @@ const rect = canvas.getBoundingClientRect();
 const pct = Number(e.target.value) / 100;
 const clientX = rect.left + pct * rect.width;
 handlePointer(clientX);
-try{ if (mobileSliderHint) mobileSliderHint.style.display = 'none'; } catch(e){}
 }catch(err){}
 });
 mobileSlider.addEventListener('pointerdown', function(e){ e.preventDefault(); updateSliderPosition(e.clientX); });
 mobileSlider.addEventListener('pointermove', function(e){ if (e.pointerType === 'touch' || e.pressure > 0) { e.preventDefault(); updateSliderPosition(e.clientX); } }, { passive: false });
 mobileSlider.addEventListener('touchstart', function(e){ e.preventDefault(); updateSliderPosition(e.touches[0].clientX); }, { passive: false });
 mobileSlider.addEventListener('touchmove', function(e){ e.preventDefault(); updateSliderPosition(e.touches[0].clientX); }, { passive: false });
-mobileSlider.addEventListener('pointerdown', function(){ try{ if (mobileSliderHint) mobileSliderHint.style.display = 'none'; } catch(e){} });
 }
+
 if (mobileFireBtn) {
 mobileFireBtn.addEventListener('pointerdown', function(e){ e.preventDefault(); shootPlayer(); });
 mobileFireBtn.addEventListener('touchstart', function(e){ e.preventDefault(); shootPlayer(); }, { passive:false });
 }
-try{ if (!isTouchDevice) { const mc = document.getElementById('mobile-controller'); if (mc) mc.style.display = 'none'; } } catch(e) {}
+
 if (settingsCloseBtn) {
 settingsCloseBtn.addEventListener('click', () => {
 if (!settingsOverlayEl) return;
 settingsOverlayEl.classList.add('hidden');
 isPaused = !!prevPaused;
-pauseBtn.textContent = isPaused ? "Resume (P)" : "Pause (P)";
+pauseBtn.textContent = isPaused ? "Resume" : "Pause";
 const mpBtn = document.getElementById('mobile-pause-btn'); if (mpBtn) mpBtn.textContent = 'Pause';
 });
 }
+
 if (settingSoundRange) {
 settingSoundRange.value = 100;
 settingSoundRange.addEventListener('input', (e) => {
@@ -2093,8 +2177,9 @@ masterVolume = Number(e.target.value) / 100;
 if (masterVolume > 0 && !audioCtx) initAudio();
 });
 }
+
 if (settingMusicRange) {
-settingMusicRange.value = 100;
+settingMusicRange.value = 50; // Initialized to 50%
 settingMusicRange.addEventListener('input', (e) => {
 musicVolume = Number(e.target.value) / 100;
 if (currentTrack && trackNodes[currentTrack]) {
@@ -2105,14 +2190,17 @@ trackNodes[currentTrack].gainNode.gain.setValueAtTime(musicVolume, now);
 }
 });
 }
-window.addEventListener('click', () => { playMusicTrack('rampage'); }, { once: true });
-window.addEventListener('touchstart', () => { playMusicTrack('rampage'); }, { once: true });
+
+window.addEventListener('click', () => { playMusicTrack('titles'); }, { once: true });
+window.addEventListener('touchstart', () => { playMusicTrack('titles'); }, { once: true });
+
 if (settingsRestartBtn) {
 settingsRestartBtn.addEventListener('click', () => {
 resetGame();
 if (settingsOverlayEl) settingsOverlayEl.classList.add('hidden');
 });
 }
+
 requestAnimationFrame(loop);
 loadStats();
 </script>
