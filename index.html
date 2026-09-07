@@ -69,12 +69,27 @@ High Score: <b id="stat-high">0</b> &nbsp; Best Wave: <b id="stat-bestwave">0</b
 </div>
 </div>
 </div>
+
 <div id="win-overlay" class="overlay-screen hidden">
-<div class="menu-box">
-<div class="subtitle">Earth is safe! Congratulations!</div>
-<h1 class="title" style="font-size: 40px;">YOU WIN!</h1>
-<button id="win-restart-btn" class="play-btn">Play Again</button>
-</div>
+  <div class="menu-box">
+    <div class="subtitle">Earth is safe! Congratulations!</div>
+    <h1 class="title" style="font-size: 40px;">YOU WIN!</h1>
+    
+    <!-- Your Stats added from starting screen -->
+    <div id="win-stats-box" class="controls-card" style="margin-top:14px; margin-bottom:18px;">
+      <b>Your Stats</b><br>
+      High Score: <b id="win-stat-high">0</b> &nbsp; Best Wave: <b id="win-stat-bestwave">0</b>
+    </div>
+<br>
+    <button id="win-restart-btn" class="play-btn2">Play Again</button>
+
+    <br><br>
+    <!-- Credits Footer -->
+    <div class="win-credits" style="margin-top: 24px; display: flex; flex-direction: column; align-items: center; gap: 6px;">
+      <img src="assets/img/LazyCatLogo.png" alt="Lazy Cat Logo" style="max-width: 120px; height: auto;" />
+      <span style="font-size: 11px; color: #7f9f8c; letter-spacing: 0.5px;">Copyright © 2026 Lazy Cat Studios</span>
+    </div>
+  </div>
 </div>
 <div id="unlock-overlay" class="overlay-screen hidden">
 <div class="menu-box">
