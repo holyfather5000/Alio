@@ -431,6 +431,12 @@ overflow: hidden;
 opacity: 0.95;
 transition: transform 0.12s ease, filter 0.12s ease;
 cursor: pointer;
+/* iOS Safari Fixes */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 #mobile-controller .fire-btn:active {
 transform: scale(0.92);

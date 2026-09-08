@@ -1490,23 +1490,42 @@ function handlePointer(x) {
     player.x = Math.max(28, Math.min(W - 28, (x - rect.left) * scaleX));
 }
 
+
+// --- CANVAS TOUCH & POINTER HANDLING ---
 canvas.addEventListener("mousemove", e => {
     handlePointer(e.clientX);
 });
+
 canvas.addEventListener("touchstart", e => {
     e.preventDefault();
     handlePointer(e.touches[0].clientX);
     if (touchFireEnabled) shootPlayer();
 }, { passive: false });
-canvas.addEventListener("touchmove", e => {
-    handlePointer(e.touches[0].clientX);
-}, { passive: true });
-canvas.addEventListener("click", () => shootPlayer());
 
-if (playBtn) {
-    playBtn.addEventListener("click", () => startGame());
-    playBtn.addEventListener('touchend', (e) => { e.preventDefault(); startGame(); }, { passive: false });
-    playBtn.style.touchAction = 'manipulation';
+canvas.addEventListener("touchmove", e => {
+    e.preventDefault();
+    handlePointer(e.touches[0].clientX);
+}, { passive: false });
+
+canvas.addEventListener("touchend", e => {
+    e.preventDefault();
+}, { passive: false });
+
+canvas.addEventListener("touchcancel", e => {
+    e.preventDefault();
+}, { passive: false });
+
+// --- MOBILE FIRE BUTTON iOS FIX ---
+if (mobileFireBtn) {
+    const handleFire = (e) => {
+        if (e.cancelable) e.preventDefault();
+        shootPlayer();
+    };
+
+    mobileFireBtn.addEventListener('touchstart', handleFire, { passive: false });
+    mobileFireBtn.addEventListener('pointerdown', (e) => {
+        if (e.pointerType !== 'touch') handleFire(e);
+    });
 }
 
 pauseBtn.addEventListener("click", togglePause);
