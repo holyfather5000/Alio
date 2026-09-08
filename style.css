@@ -391,7 +391,7 @@ border-radius: 50%;
 background: #f8fafc;
 border: 3px solid rgba(59, 246, 159, 0.9);
 box-shadow: 0 0 0 4px rgba(59, 246, 109, 0.2), 0 4px 12px rgba(0,0,0,0.35);
-margin-top: 12px;
+margin-top: 0px;
 cursor: pointer;
 }
 #mobile-controller input[type=range]::-moz-range-thumb {
@@ -409,10 +409,10 @@ border-radius: 18px;
 background: linear-gradient(90deg,#1f4228,#0f2a18);
 }
 #mobile-controller .fire-btn {
-width: 72px;
+width: 62px;
 aspect-ratio: 1 / 1;
 height: auto;
-min-height: 72px;
+min-height: 62px;
 border-radius: 50%;
 padding: 0;
 box-sizing: border-box;
