@@ -1574,28 +1574,40 @@ if (topSettingsBtn) {
 }
 
 if (mobileSlider) {
-    const updateSliderPosition = (clientX) => {
-        try {
-            const rect = mobileSlider.getBoundingClientRect();
-            const pct = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
-            mobileSlider.value = String(Math.round(pct * 100));
-            const targetX = canvas.getBoundingClientRect().left + pct * canvas.getBoundingClientRect().width;
-            handlePointer(targetX);
-        } catch (err) {}
+    const handleSliderTouch = (e) => {
+        e.preventDefault(); // Prevents iOS from locking gestures or scrolling
+        const rect = mobileSlider.getBoundingClientRect();
+        
+        // Find the touch finger that is actually interacting with the slider
+        for (let i = 0; i < e.touches.length; i++) {
+            const touch = e.touches[i];
+            // Check if touch target is slider OR if touch coordinates fall horizontally within bounds
+            if (touch.target === mobileSlider || (touch.clientX >= rect.left && touch.clientX <= rect.right)) {
+                const pct = Math.min(1, Math.max(0, (touch.clientX - rect.left) / rect.width));
+                mobileSlider.value = String(Math.round(pct * 100));
+                
+                const targetX = canvas.getBoundingClientRect().left + pct * canvas.getBoundingClientRect().width;
+                handlePointer(targetX);
+                break;
+            }
+        }
     };
+
     mobileSlider.value = 50;
-    mobileSlider.addEventListener('input', function(e){
-        try{
+
+    // Standard slider change handler for non-touch
+    mobileSlider.addEventListener('input', function(e) {
+        try {
             const rect = canvas.getBoundingClientRect();
             const pct = Number(e.target.value) / 100;
             const clientX = rect.left + pct * rect.width;
             handlePointer(clientX);
-        }catch(err){}
+        } catch(err) {}
     });
-    mobileSlider.addEventListener('pointerdown', function(e){ e.preventDefault(); updateSliderPosition(e.clientX); });
-    mobileSlider.addEventListener('pointermove', function(e){ if (e.pointerType === 'touch' || e.pressure > 0) { e.preventDefault(); updateSliderPosition(e.clientX); } }, { passive: false });
-    mobileSlider.addEventListener('touchstart', function(e){ e.preventDefault(); updateSliderPosition(e.touches[0].clientX); }, { passive: false });
-    mobileSlider.addEventListener('touchmove', function(e){ e.preventDefault(); updateSliderPosition(e.touches[0].clientX); }, { passive: false });
+
+    // Multi-touch aware listeners for Mobile Safari
+    mobileSlider.addEventListener('touchstart', handleSliderTouch, { passive: false });
+    mobileSlider.addEventListener('touchmove', handleSliderTouch, { passive: false });
 }
 
 if (mobileFireBtn) {

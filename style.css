@@ -377,7 +377,7 @@ height: 42px;
 border-radius: 18px;
 background: linear-gradient(90deg,#1f422f87,#0f2a1d);
 box-shadow: inset 0 0 0 1px rgba(148, 184, 165, 0.2);
-touch-action: pan-y;
+touch-action: none; /* updated for iphone */
 pointer-events: auto;
 padding: 0 8px;
 margin: 0;
@@ -440,8 +440,8 @@ filter: brightness(1.15);
 
 @media (max-width: 640px) {
 .overlay-screen .menu-box { width: 92% !important; padding: 12px !important; }
-.overlay-screen .menu-box .settings-actions { flex-direction: column; gap:8px; align-items: stretch; }
-.overlay-screen .menu-box .settings-actions .play-btn { width: 100%; padding: 10px 12px; font-size: 16px; }
+.overlay-screen .menu-box .settings-actions { flex-direction: column; gap:8px; align-items: center; }
+.overlay-screen .menu-box .settings-actions .play-btn { width: 100%; padding: 15px 12px; font-size: 16px;}
 .overlay-screen .menu-box .menu-row { flex-direction: column; align-items: stretch; gap:8px; }
 .overlay-screen .menu-box label { width: 100%; }
 }
