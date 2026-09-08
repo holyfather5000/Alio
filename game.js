@@ -297,6 +297,7 @@ let bullets = [];
 let enemyBullets = [];
 let particles = [];
 let confetti = [];
+let floatingTexts = [];
 let player;
 const touchScaleFactor = isTouchDevice ? 1.18 : 1;
 let stats = { highScore: 0, gamesPlayed: 0, wins: 0, bestWave: 0, totalScore: 0 };
@@ -305,6 +306,42 @@ let soundEnabled = true;
 let touchFireEnabled = true;
 let prevPaused = false;
 let masterVolume = 1.0;
+let combo = 0;
+let maxCombo = 5;
+
+function spawnFloatingText(text, x, y, color = "#ffea79") {
+    floatingTexts.push({
+        text: text,
+        x: x,
+        y: y,
+        vy: -35,
+        life: 0.7,
+        maxLife: 0.7,
+        color: color
+    });
+}
+
+function updateFloatingTexts(dt) {
+    for (const ft of floatingTexts) {
+        ft.y += ft.vy * dt;
+        ft.life -= dt;
+    }
+    floatingTexts = floatingTexts.filter(ft => ft.life > 0);
+}
+
+function drawFloatingTexts() {
+    for (const ft of floatingTexts) {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, ft.life / ft.maxLife);
+        ctx.font = "bold 26px Arial";
+        ctx.fillStyle = "#35ff5aaf";
+        ctx.textAlign = "center";
+        ctx.shadowBlur = 4;
+        ctx.shadowColor = "#000000";
+        ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.restore();
+    }
+}
 
 function loadStats() {
     try {
@@ -361,6 +398,7 @@ function startGame() {
 
 function resetGame() {
     score = 0;
+    combo = 0;
     wave = 1;
     lives = 3;
     gameOver = false;
@@ -375,6 +413,7 @@ function resetGame() {
     enemyBullets = [];
     particles = [];
     confetti = [];
+    floatingTexts = [];
     showWinOverlay = false;
     laserUnlockShown = false;
     const winEl = document.getElementById('win-overlay'); if (winEl) winEl.classList.add('hidden');
@@ -724,6 +763,7 @@ function circleRectCollision(circle, rect) {
 
 function damagePlayer() {
     if (player.invincible > 0 || gameOver) return;
+    combo = 0;
     lives--;
     player.invincible = 2.0;
     spawnExplosion(player.x, player.y, 22);
@@ -878,6 +918,15 @@ function update(dt) {
     }
 
     for (const b of bullets) b.y += b.vy * dt;
+    
+    // Reset combo if a laser completely leaves the top of the screen
+    for (const b of bullets) {
+        const offScreen = b.laser ? (b.y <= -(b.length || 0)) : (b.y <= -20);
+        if (offScreen) {
+            combo = 0;
+        }
+    }
+    
     bullets = bullets.filter(b => b.laser ? (b.y > -(b.length || 0)) : (b.y > -20));
     for (const b of bullets) {
         for (const e of enemies) {
@@ -888,6 +937,12 @@ function update(dt) {
                 const bottom = b.y;
                 const overlapY = (e.y + e.size/2) >= top && (e.y - e.size/2) <= bottom;
                 if (Math.abs(b.x - e.x) < e.size / 2 + laserWidth / 2 && overlapY) {
+                    combo = Math.min(combo + 1, maxCombo);
+                    if (combo > 1) {
+                        spawnFloatingText("x" + combo, e.x, e.y);
+                    }
+                    let pointsAwarded = 100 * combo;
+                    score += pointsAwarded;
                     e.hp--;
                     e.hitTimer = 0.08;
                     if (e.hp <= 0) {
@@ -910,6 +965,12 @@ function update(dt) {
                 const hitRadius = e.size * .55;
                 if (Math.hypot(b.x - e.x, b.y - e.y) < hitRadius + b.radius) {
                     b.y = -100;
+                    combo = Math.min(combo + 1, maxCombo);
+                    if (combo > 1) {
+                        spawnFloatingText("x" + combo, e.x, e.y);
+                    }
+                    let pointsAwarded = 100 * combo;
+                    score += pointsAwarded;
                     e.hp--;
                     e.hitTimer = 0.08;
                     if (e.hp <= 0) {
@@ -961,6 +1022,7 @@ function update(dt) {
     }
     bullets = bullets.filter(b => b.y > -50);
     updateParticles(dt);
+    updateFloatingTexts(dt);
 }
 
 function updateParticles(dt) {
@@ -1449,6 +1511,7 @@ function draw() {
         drawBullets();
         drawPlayer();
         drawParticles();
+        drawFloatingTexts();
         if (showWinOverlay) drawConfetti();
     }
     ctx.strokeStyle = "rgba(110, 140, 200, .18)";
@@ -1490,42 +1553,23 @@ function handlePointer(x) {
     player.x = Math.max(28, Math.min(W - 28, (x - rect.left) * scaleX));
 }
 
-
-// --- CANVAS TOUCH & POINTER HANDLING ---
 canvas.addEventListener("mousemove", e => {
     handlePointer(e.clientX);
 });
-
 canvas.addEventListener("touchstart", e => {
     e.preventDefault();
     handlePointer(e.touches[0].clientX);
     if (touchFireEnabled) shootPlayer();
 }, { passive: false });
-
 canvas.addEventListener("touchmove", e => {
-    e.preventDefault();
     handlePointer(e.touches[0].clientX);
-}, { passive: false });
+}, { passive: true });
+canvas.addEventListener("click", () => shootPlayer());
 
-canvas.addEventListener("touchend", e => {
-    e.preventDefault();
-}, { passive: false });
-
-canvas.addEventListener("touchcancel", e => {
-    e.preventDefault();
-}, { passive: false });
-
-// --- MOBILE FIRE BUTTON iOS FIX ---
-if (mobileFireBtn) {
-    const handleFire = (e) => {
-        if (e.cancelable) e.preventDefault();
-        shootPlayer();
-    };
-
-    mobileFireBtn.addEventListener('touchstart', handleFire, { passive: false });
-    mobileFireBtn.addEventListener('pointerdown', (e) => {
-        if (e.pointerType !== 'touch') handleFire(e);
-    });
+if (playBtn) {
+    playBtn.addEventListener("click", () => startGame());
+    playBtn.addEventListener('touchend', (e) => { e.preventDefault(); startGame(); }, { passive: false });
+    playBtn.style.touchAction = 'manipulation';
 }
 
 pauseBtn.addEventListener("click", togglePause);
@@ -1594,13 +1638,11 @@ if (topSettingsBtn) {
 
 if (mobileSlider) {
     const handleSliderTouch = (e) => {
-        e.preventDefault(); // Prevents iOS from locking gestures or scrolling
+        e.preventDefault();
         const rect = mobileSlider.getBoundingClientRect();
         
-        // Find the touch finger that is actually interacting with the slider
         for (let i = 0; i < e.touches.length; i++) {
             const touch = e.touches[i];
-            // Check if touch target is slider OR if touch coordinates fall horizontally within bounds
             if (touch.target === mobileSlider || (touch.clientX >= rect.left && touch.clientX <= rect.right)) {
                 const pct = Math.min(1, Math.max(0, (touch.clientX - rect.left) / rect.width));
                 mobileSlider.value = String(Math.round(pct * 100));
@@ -1614,7 +1656,6 @@ if (mobileSlider) {
 
     mobileSlider.value = 50;
 
-    // Standard slider change handler for non-touch
     mobileSlider.addEventListener('input', function(e) {
         try {
             const rect = canvas.getBoundingClientRect();
@@ -1624,7 +1665,6 @@ if (mobileSlider) {
         } catch(err) {}
     });
 
-    // Multi-touch aware listeners for Mobile Safari
     mobileSlider.addEventListener('touchstart', handleSliderTouch, { passive: false });
     mobileSlider.addEventListener('touchmove', handleSliderTouch, { passive: false });
 }
