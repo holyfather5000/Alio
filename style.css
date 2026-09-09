@@ -1,4 +1,13 @@
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+  /* Global iOS selection and tap-highlight removal */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
 html, body {
 width: 100%;
 height: 100%;
@@ -15,13 +24,14 @@ align-items: center;
 }
 /* Main fixed-ratio viewport wrapper */
 .viewport-container {
-position: relative;
-width: 100vw;
-height: 100vh;
-display: flex;
-justify-content: center;
-align-items: center;
-background: #010604;
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column; /* Stack HUD above canvas */
+  justify-content: center;
+  align-items: center;
+  background: #010604;
 }
 /* Canvas maintains true pixel aspect ratio */
 canvas {
@@ -168,8 +178,6 @@ box-shadow: 0 0 35px rgba(59, 246, 134, 0.9);
 transform: scale(0.98);
 }
 
-
-
 .controls-card {
 margin-top: 30px;
 padding: 16px;
@@ -186,20 +194,21 @@ color: #e2f0e4;
 
 /* HUD Header */
 .hud-overlay {
-position: absolute;
-top: 15px;
-left: 50%;
-transform: translateX(-50%);
-width: 90%;
-max-width: 680px;
-display: flex;
-justify-content: space-between;
-align-items: center;
-font-weight: 800;
-font-size: 16px;
-letter-spacing: 1px;
-z-index: 5;
-pointer-events: none;
+  position: relative; 
+  top: 0;             /* Reset absolute top alignment */
+  left: auto;         /* Reset centering transform */
+  transform: none; 
+  width: 100%;
+  max-width: 720px;   /* Match canvas width */
+  margin-bottom: 12px;/* Adds spacing between HUD and canvas */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: 1px;
+  z-index: 5;
+  pointer-events: auto; 
 }
 .hud-item {
 background: rgba(10, 30, 21, 0.7);
@@ -348,7 +357,8 @@ bottom: calc(70px + env(safe-area-inset-bottom, 12px));
 .viewport-container { flex-direction: column; align-items: center; }
 }
 
-#mobile-controller {
+#mobile-controller,
+#mobile-controller * {
 display:none;
 position: relative;
 width: min(98vw, 760px);
@@ -357,6 +367,12 @@ margin-top: 4px;
 z-index: 8;
 padding: 4px 6px 8px;
 touch-action: pan-y;
+/* Prevent selection on mobile controller container */
+-webkit-tap-highlight-color: transparent !important;
+-webkit-touch-callout: none !important;
+-webkit-user-select: none !important;
+user-select: none !important;
+outline: none !important;
 }
 #mobile-controller .ctrl-row {
 display:flex;
@@ -476,3 +492,13 @@ grid-template-columns: 1fr;
 gap: 4px 0;
 }
 }
+
+/* Ensure modal overlays cover the full canvas container */
+@media (min-width: 641px) {
+.viewport-container > .overlay-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}}
